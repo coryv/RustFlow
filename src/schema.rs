@@ -29,6 +29,7 @@ pub struct EdgeDefinition {
 
 use crate::stream_engine::{StreamExecutor, StreamNode, nodes};
 use crate::stream_engine::nodes::agent_node::AgentNode;
+use crate::stream_engine::nodes::{HtmlExtractNode, ExtractMode};
 use crate::integrations;
 
 impl WorkflowDefinition {
@@ -114,6 +115,7 @@ impl WorkflowDefinition {
                     let credential_id = node_def.data.get("credential_id").and_then(|v| v.as_str()).map(|s| s.to_string());
                     let api_base = node_def.data.get("api_base").and_then(|v| v.as_str()).map(|s| s.to_string());
                     let json_schema = node_def.data.get("json_schema").cloned();
+                    let provider = node_def.data.get("provider").and_then(|v| v.as_str()).unwrap_or("openai").to_string();
                     
                     // Resolve API Key from secrets if credential_id is present
                     let mut final_api_key = api_key;
@@ -131,10 +133,27 @@ impl WorkflowDefinition {
                         credential_id,
                         api_base,
                         json_schema,
+                        provider,
                     })
                 },
                 "slack_post_message" => {
                     Box::new(integrations::SlackPostMessage::new())
+                },
+                "notion_create_page" => {
+                    Box::new(integrations::NotionCreatePage::new())
+                },
+                "html_extract" => {
+                    let selector = node_def.data.get("selector").and_then(|v| v.as_str()).ok_or_else(|| anyhow!("Missing 'selector' for html_extract"))?.to_string();
+                    let mode_str = node_def.data.get("mode").and_then(|v| v.as_str()).unwrap_or("text");
+                    let mode = match mode_str {
+                        "html" => ExtractMode::Html,
+                        "attribute" => {
+                            let attr = node_def.data.get("attribute").and_then(|v| v.as_str()).unwrap_or("href").to_string();
+                            ExtractMode::Attribute(attr)
+                        },
+                        _ => ExtractMode::Text,
+                    };
+                    Box::new(HtmlExtractNode::new(selector, mode))
                 },
                 _ => return Err(anyhow!("Unknown node type: {}", node_def.node_type)),
             };

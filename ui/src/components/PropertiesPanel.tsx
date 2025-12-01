@@ -1,98 +1,118 @@
-import { type Node } from 'reactflow';
+import React, { useEffect, useState } from 'react';
+import type { Node } from 'reactflow';
+import { X } from 'lucide-react';
 
 interface PropertiesPanelProps {
     selectedNode: Node | null;
     setNodes: React.Dispatch<React.SetStateAction<Node[]>>;
+    setSelectedNode: (node: Node | null) => void;
+    nodeTypes: any[];
 }
 
-export default function PropertiesPanel({ selectedNode, setNodes }: PropertiesPanelProps) {
-    if (!selectedNode) {
-        return (
-            <aside className="w-64 bg-gray-100 p-4 border-l border-gray-200">
-                <div className="text-gray-500 text-sm">Select a node to edit properties</div>
-            </aside>
-        );
-    }
+export default function PropertiesPanel({ selectedNode, setNodes, setSelectedNode, nodeTypes }: PropertiesPanelProps) {
+    const [data, setData] = useState<any>({});
 
-    const onChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = evt.target;
+    useEffect(() => {
+        if (selectedNode) {
+            setData(selectedNode.data || {});
+        }
+    }, [selectedNode]);
+
+    const handleChange = (key: string, value: any) => {
+        const newData = { ...data, [key]: value };
+        setData(newData);
+
         setNodes((nds) =>
-            nds.map((n) => {
-                if (n.id === selectedNode.id) {
-                    return {
-                        ...n,
-                        data: {
-                            ...n.data,
-                            [name]: value,
-                        },
-                    };
+            nds.map((node) => {
+                if (node.id === selectedNode?.id) {
+                    return { ...node, data: newData };
                 }
-                return n;
+                return node;
             })
         );
     };
 
+    if (!selectedNode) {
+        return (
+            <aside className="w-80 bg-gray-900 border-l border-gray-800 p-6 flex flex-col items-center justify-center text-gray-500">
+                <p>Select a node to edit properties</p>
+            </aside>
+        );
+    }
+
     return (
-        <aside className="w-64 bg-gray-100 p-4 border-l border-gray-200 flex flex-col gap-4">
-            <h2 className="font-bold text-gray-700">Properties</h2>
-            <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500">Label</label>
-                <input
-                    type="text"
-                    name="label"
-                    value={selectedNode.data.label}
-                    onChange={onChange}
-                    className="border border-gray-300 rounded px-2 py-1 text-sm"
-                />
+        <aside className="w-80 bg-gray-900 border-l border-gray-800 flex flex-col h-full">
+            <div className="p-4 border-b border-gray-800 flex justify-between items-center">
+                <div>
+                    <h2 className="text-sm font-semibold text-gray-200">Properties</h2>
+                    <p className="text-xs text-gray-500">{selectedNode.type}</p>
+                </div>
+                <button onClick={() => setSelectedNode(null)} className="text-gray-500 hover:text-white">
+                    <X size={16} />
+                </button>
             </div>
 
-            {selectedNode.data.label.includes('Time') && (
-                <div className="flex flex-col gap-1">
-                    <label className="text-xs font-semibold text-gray-500">Cron Expression</label>
+            <div className="p-4 overflow-y-auto flex-1 space-y-4">
+                <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1">Label</label>
                     <input
                         type="text"
-                        name="cron"
-                        placeholder="* * * * *"
-                        value={selectedNode.data.cron || ''}
-                        onChange={onChange}
-                        className="border border-gray-300 rounded px-2 py-1 text-sm font-mono"
+                        value={data.label || ''}
+                        onChange={(e) => handleChange('label', e.target.value)}
+                        className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
                     />
                 </div>
-            )}
 
-            {selectedNode.data.label.includes('Webhook') && (
-                <>
-                    <div className="flex flex-col gap-1">
-                        <label className="text-xs font-semibold text-gray-500">Path</label>
-                        <input
-                            type="text"
-                            name="path"
-                            placeholder="/webhook"
-                            value={selectedNode.data.path || ''}
-                            onChange={onChange}
-                            className="border border-gray-300 rounded px-2 py-1 text-sm"
-                        />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label className="text-xs font-semibold text-gray-500">Method</label>
-                        <select
-                            name="method"
-                            value={selectedNode.data.method || 'POST'}
-                            onChange={onChange as any}
-                            className="border border-gray-300 rounded px-2 py-1 text-sm"
-                        >
-                            <option value="GET">GET</option>
-                            <option value="POST">POST</option>
-                            <option value="PUT">PUT</option>
-                        </select>
-                    </div>
-                </>
-            )}
+                {/* Dynamic fields based on node definition */}
+                {(() => {
+                    const nodeType = nodeTypes.find(t => t.id === selectedNode.type);
+                    if (!nodeType || !nodeType.properties) return null;
 
-            <div className="text-xs text-gray-400 mt-2">
-                ID: {selectedNode.id}
-                <br />
-                Type: {selectedNode.type}
+                    return nodeType.properties.map((prop: any) => (
+                        <div key={prop.name}>
+                            <label className="block text-xs font-medium text-gray-400 mb-1">
+                                {prop.label} {prop.required && <span className="text-red-500">*</span>}
+                            </label>
+
+                            {prop.type === 'text' && (
+                                <input
+                                    type="text"
+                                    value={data[prop.name] || prop.default || ''}
+                                    onChange={(e) => handleChange(prop.name, e.target.value)}
+                                    className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                                />
+                            )}
+
+                            {prop.type === 'select' && (
+                                <select
+                                    value={data[prop.name] || prop.default || ''}
+                                    onChange={(e) => handleChange(prop.name, e.target.value)}
+                                    className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                                >
+                                    {prop.options?.map((opt: string) => (
+                                        <option key={opt} value={opt}>{opt}</option>
+                                    ))}
+                                </select>
+                            )}
+
+                            {prop.type === 'json' && (
+                                <textarea
+                                    value={typeof data[prop.name] === 'string' ? data[prop.name] : JSON.stringify(data[prop.name] || JSON.parse(prop.default || "{}"), null, 2)}
+                                    onChange={(e) => handleChange(prop.name, e.target.value)}
+                                    className="w-full h-40 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-blue-500"
+                                />
+                            )}
+
+                            {prop.type === 'code' && (
+                                <textarea
+                                    value={data[prop.name] || prop.default || ''}
+                                    onChange={(e) => handleChange(prop.name, e.target.value)}
+                                    className="w-full h-60 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-blue-500"
+                                />
+                            )}
+                        </div>
+                    ));
+                })()}
             </div>
         </aside>
     );

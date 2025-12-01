@@ -27,7 +27,7 @@ struct ImplementationDef {
     method: String,
     url: String,
     headers: Option<HashMap<String, String>>,
-    body: Option<HashMap<String, String>>,
+    body: Option<HashMap<String, serde_yaml::Value>>,
 }
 
 #[proc_macro]
@@ -82,8 +82,13 @@ pub fn generate_integration(input: TokenStream) -> TokenStream {
         let body_code = if let Some(body) = node.implementation.body {
              let mut inserts = Vec::new();
             for (k, v) in body {
+                // Convert YAML value to JSON string representation to embed in code
+                // We use serde_json::to_string to get a valid JSON string of the value
+                // Then in the generated code, we parse it back to serde_json::Value
+                let json_str = serde_json::to_string(&v).unwrap();
                 inserts.push(quote! {
-                    body_map.insert(#k.to_string(), serde_json::Value::String(#v.to_string()));
+                    let val: serde_json::Value = serde_json::from_str(#json_str).unwrap();
+                    body_map.insert(#k.to_string(), val);
                 });
             }
             quote! {

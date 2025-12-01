@@ -95,7 +95,15 @@ impl StreamNode for HttpRequestNode {
                                 .map(|(k, v)| (k.to_string(), v.to_str().unwrap_or("").to_string()))
                                 .collect();
                             
-                            let body_json: Value = resp.json().await.unwrap_or(Value::Null);
+                            let body_bytes = resp.bytes().await.unwrap_or_default();
+                            let body_json: Value = match serde_json::from_slice(&body_bytes) {
+                                Ok(v) => v,
+                                Err(_) => {
+                                    // Fallback to string
+                                    let text = String::from_utf8_lossy(&body_bytes).to_string();
+                                    Value::String(text)
+                                }
+                            };
 
                             let output_data = json!({
                                 "status": status,

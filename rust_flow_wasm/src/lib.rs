@@ -71,6 +71,21 @@ impl WasmWorkflow {
         }
     }
 
+    pub fn add_http_request(&mut self, id: String, method: String, url: String, headers_json: String, body_json: String) -> Result<(), JsValue> {
+        if let Some(w) = self.inner.as_mut() {
+             let headers: std::collections::HashMap<String, String> = serde_json::from_str(&headers_json)
+                .map_err(|e| JsValue::from_str(&e.to_string()))?;
+             let body: Option<serde_json::Value> = if body_json.is_empty() {
+                 None
+             } else {
+                 Some(serde_json::from_str(&body_json).map_err(|e| JsValue::from_str(&e.to_string()))?)
+             };
+
+            w.add_node(id, Box::new(rust_flow::nodes::HttpRequestNode::new(method, url, headers, body)));
+        }
+        Ok(())
+    }
+
     pub fn add_connection(&mut self, from: String, to: String) {
         if let Some(w) = self.inner.as_mut() {
             w.add_connection(from, to);

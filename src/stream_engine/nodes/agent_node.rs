@@ -12,62 +12,105 @@ pub struct AgentNode {
     pub model: String,
     pub system_prompt: String,
     pub user_prompt: String,
-    pub api_key: Option<String>, // Can be overridden by input or env
-    pub credential_id: Option<String>, // UUID of stored credential
-    pub api_base: Option<String>, // Defaults to OpenAI
-    pub json_schema: Option<Value>, // Optional JSON Schema for validation
+    pub api_key: Option<String>,
+    pub credential_id: Option<String>,
+    pub api_base: Option<String>,
+    pub json_schema: Option<Value>,
+    #[serde(default)]
+    pub provider: String, // "openai" or "gemini"
 }
 
 impl AgentNode {
     async fn call_llm(&self, system: &str, user: &str, api_key: &str) -> Result<Value> {
         let client = Client::new();
-        let base_url = self.api_base.as_deref().unwrap_or("https://api.openai.com/v1");
-        let url = format!("{}/chat/completions", base_url.trim_end_matches('/'));
+        
+        if self.provider == "gemini" {
+             let base_url = self.api_base.as_deref().unwrap_or("https://generativelanguage.googleapis.com/v1beta");
+             let url = format!("{}/models/{}:generateContent?key={}", base_url.trim_end_matches('/'), self.model, api_key);
 
-        let messages = vec![
-            json!({ "role": "system", "content": system }),
-            json!({ "role": "user", "content": user }),
-        ];
+             // Gemini API format
+             let body = json!({
+                 "contents": [{
+                     "parts": [
+                         { "text": system }, // Gemini doesn't have system role in same way, usually passed as context or just text
+                         { "text": user }
+                     ]
+                 }],
+                 "generationConfig": {
+                     "responseMimeType": if self.json_schema.is_some() { "application/json" } else { "text/plain" }
+                 }
+             });
 
-        let mut body = json!({
-            "model": self.model,
-            "messages": messages,
-        });
+             let res = client.post(&url)
+                .header("Content-Type", "application/json")
+                .json(&body)
+                .send()
+                .await
+                .context("Failed to send request to Gemini API")?;
 
-        // If JSON schema is provided, enforce structured output
-        if self.json_schema.is_some() {
-            body["response_format"] = json!({ "type": "json_object" });
-        }
+            if !res.status().is_success() {
+                let error_text = res.text().await?;
+                return Err(anyhow!("Gemini API Error: {}", error_text));
+            }
 
-        let res = client.post(&url)
-            .header("Authorization", format!("Bearer {}", api_key))
-            .header("Content-Type", "application/json")
-            .json(&body)
-            .send()
-            .await
-            .context("Failed to send request to LLM API")?;
+            let res_json: Value = res.json().await?;
+            // Extract content from Gemini response
+            let content = res_json["candidates"][0]["content"]["parts"][0]["text"]
+                .as_str()
+                .ok_or_else(|| anyhow!("No content in Gemini response"))?;
 
-        if !res.status().is_success() {
-            let error_text = res.text().await?;
-            return Err(anyhow!("LLM API Error: {}", error_text));
-        }
+             if self.json_schema.is_some() {
+                let parsed: Value = serde_json::from_str(content)
+                    .context("Gemini response was not valid JSON")?;
+                Ok(parsed)
+            } else {
+                Ok(Value::String(content.to_string()))
+            }
 
-        let res_json: Value = res.json().await?;
-        let content = res_json["choices"][0]["message"]["content"]
-            .as_str()
-            .ok_or_else(|| anyhow!("No content in LLM response"))?;
-
-        // Parse content as JSON if schema is present (or if response_format was json_object)
-        if self.json_schema.is_some() {
-            let parsed: Value = serde_json::from_str(content)
-                .context("LLM response was not valid JSON")?;
-            
-            // TODO: Validate against self.json_schema using a library like jsonschema
-            // For now, we just ensure it parses as JSON.
-            
-            Ok(parsed)
         } else {
-            Ok(Value::String(content.to_string()))
+            // OpenAI (Default)
+            let base_url = self.api_base.as_deref().unwrap_or("https://api.openai.com/v1");
+            let url = format!("{}/chat/completions", base_url.trim_end_matches('/'));
+
+            let messages = vec![
+                json!({ "role": "system", "content": system }),
+                json!({ "role": "user", "content": user }),
+            ];
+
+            let mut body = json!({
+                "model": self.model,
+                "messages": messages,
+            });
+
+            if self.json_schema.is_some() {
+                body["response_format"] = json!({ "type": "json_object" });
+            }
+
+            let res = client.post(&url)
+                .header("Authorization", format!("Bearer {}", api_key))
+                .header("Content-Type", "application/json")
+                .json(&body)
+                .send()
+                .await
+                .context("Failed to send request to LLM API")?;
+
+            if !res.status().is_success() {
+                let error_text = res.text().await?;
+                return Err(anyhow!("LLM API Error: {}", error_text));
+            }
+
+            let res_json: Value = res.json().await?;
+            let content = res_json["choices"][0]["message"]["content"]
+                .as_str()
+                .ok_or_else(|| anyhow!("No content in LLM response"))?;
+
+            if self.json_schema.is_some() {
+                let parsed: Value = serde_json::from_str(content)
+                    .context("LLM response was not valid JSON")?;
+                Ok(parsed)
+            } else {
+                Ok(Value::String(content.to_string()))
+            }
         }
     }
 }
@@ -79,13 +122,19 @@ impl StreamNode for AgentNode {
         let mut rx = inputs.remove(0);
         let mut env = Environment::new();
 
-        // Get API Key from config or env
-        // Note: If credential_id was used, the Loader should have injected the decrypted key into self.api_key
-        let api_key = self.api_key.clone()
-            .or_else(|| std::env::var("OPENAI_API_KEY").ok())
-            .ok_or_else(|| anyhow!("No API Key provided for AgentNode"))?;
-
         while let Some(input) = rx.recv().await {
+            // Get API Key from config or env
+            let api_key = self.api_key.clone()
+                .or_else(|| std::env::var("OPENAI_API_KEY").ok())
+                .ok_or_else(|| anyhow!("No API Key provided for AgentNode"));
+
+            let api_key = match api_key {
+                Ok(k) => k,
+                Err(e) => {
+                    eprintln!("AgentNode Error: {:?}", e);
+                    continue;
+                }
+            };
             // Render Prompts
             env.add_template("system", &self.system_prompt)?;
             env.add_template("user", &self.user_prompt)?;

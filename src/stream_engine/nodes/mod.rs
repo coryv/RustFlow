@@ -26,3 +26,5 @@ pub use function_node::FunctionNode;
 pub use code_node::CodeNode;
 pub mod integration_node;
 pub use integration_node::IntegrationNode;
+pub mod html_extract_node;
+pub use html_extract_node::{HtmlExtractNode, ExtractMode};
