@@ -4,7 +4,7 @@ use uuid::Uuid;
 use serde_json::Value;
 use anyhow::Result;
 use chrono::{Utc, DateTime};
-use super::{Storage, Account, WorkflowEntity};
+use super::{Storage, Account, WorkflowEntity, Credential};
 
 pub struct SqliteStorage {
     pool: SqlitePool,
@@ -39,6 +39,15 @@ impl Storage for SqliteStorage {
             CREATE TABLE IF NOT EXISTS key_value (
                 key TEXT PRIMARY KEY,
                 value TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS credentials (
+                id TEXT PRIMARY KEY,
+                account_id TEXT NOT NULL,
+                name TEXT NOT NULL,
+                type TEXT NOT NULL,
+                data TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY(account_id) REFERENCES accounts(id)
             );
             "#
         )
@@ -180,5 +189,72 @@ impl Storage for SqliteStorage {
         } else {
             Ok(None)
         }
+    }
+
+    async fn create_credential(&self, name: &str, credential_type: &str, data: &str, account_id: Uuid) -> Result<Credential> {
+        let id = Uuid::new_v4();
+        let created_at = Utc::now();
+        let encrypted_data = super::encryption::encrypt(data)?;
+
+        sqlx::query(
+            "INSERT INTO credentials (id, account_id, name, type, data, created_at) VALUES (?, ?, ?, ?, ?, ?)"
+        )
+        .bind(id.to_string())
+        .bind(account_id.to_string())
+        .bind(name)
+        .bind(credential_type)
+        .bind(&encrypted_data)
+        .bind(created_at.to_rfc3339())
+        .execute(&self.pool)
+        .await?;
+
+        Ok(Credential {
+            id,
+            account_id,
+            name: name.to_string(),
+            credential_type: credential_type.to_string(),
+            data: encrypted_data,
+            created_at,
+        })
+    }
+
+    async fn get_credential(&self, id: Uuid) -> Result<Option<Credential>> {
+        let row = sqlx::query("SELECT id, account_id, name, type, data, created_at FROM credentials WHERE id = ?")
+            .bind(id.to_string())
+            .fetch_optional(&self.pool)
+            .await?;
+
+        if let Some(row) = row {
+            Ok(Some(Credential {
+                id: Uuid::parse_str(row.get("id"))?,
+                account_id: Uuid::parse_str(row.get("account_id"))?,
+                name: row.get("name"),
+                credential_type: row.get("type"),
+                data: row.get("data"),
+                created_at: DateTime::parse_from_rfc3339(row.get("created_at"))?.with_timezone(&Utc),
+            }))
+        } else {
+            Ok(None)
+        }
+    }
+
+    async fn list_credentials(&self, account_id: Uuid) -> Result<Vec<Credential>> {
+        let rows = sqlx::query("SELECT id, account_id, name, type, data, created_at FROM credentials WHERE account_id = ?")
+            .bind(account_id.to_string())
+            .fetch_all(&self.pool)
+            .await?;
+
+        let mut creds = Vec::new();
+        for row in rows {
+            creds.push(Credential {
+                id: Uuid::parse_str(row.get("id"))?,
+                account_id: Uuid::parse_str(row.get("account_id"))?,
+                name: row.get("name"),
+                credential_type: row.get("type"),
+                data: row.get("data"),
+                created_at: DateTime::parse_from_rfc3339(row.get("created_at"))?.with_timezone(&Utc),
+            });
+        }
+        Ok(creds)
     }
 }

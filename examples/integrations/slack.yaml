@@ -1,0 +1,14 @@
+name: "Slack"
+nodes:
+  - name: "Post Message"
+    type: "action"
+    implementation:
+      type: "http"
+      method: "POST"
+      url: "https://slack.com/api/chat.postMessage"
+      headers:
+        Authorization: "Bearer {{ credential.token }}"
+        Content-Type: "application/json"
+      body:
+        channel: "{{ input.channel }}"
+        text: "{{ input.text }}"

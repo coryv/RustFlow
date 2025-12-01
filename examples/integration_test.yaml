@@ -1,0 +1,26 @@
+name: "Integration Test"
+nodes:
+  - id: "trigger"
+    type: "manual_trigger"
+
+  - id: "data"
+    type: "set_data"
+    config:
+      data:
+        channel: "C123456"
+        text: "Hello from RustFlow!"
+
+  - id: "slack"
+    type: "slack_post_message"
+    # No config needed as it takes inputs from stream
+
+  - id: "log"
+    type: "console_output"
+
+edges:
+  - from: "trigger"
+    to: "data"
+  - from: "data"
+    to: "slack"
+  - from: "slack"
+    to: "log"

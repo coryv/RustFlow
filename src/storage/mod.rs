@@ -38,7 +38,23 @@ pub trait Storage: Send + Sync {
     // Key-Value (Cross-workflow state)
     async fn set_kv(&self, key: &str, value: &Value) -> Result<()>;
     async fn get_kv(&self, key: &str) -> Result<Option<Value>>;
+
+    // Credentials
+    async fn create_credential(&self, name: &str, credential_type: &str, data: &str, account_id: Uuid) -> Result<Credential>;
+    async fn get_credential(&self, id: Uuid) -> Result<Option<Credential>>;
+    async fn list_credentials(&self, account_id: Uuid) -> Result<Vec<Credential>>;
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Credential {
+    pub id: Uuid,
+    pub account_id: Uuid,
+    pub name: String,
+    pub credential_type: String,
+    pub data: String, // Encrypted data (Base64 encoded)
+    pub created_at: DateTime<Utc>,
 }
 
 pub mod sqlite;
+pub mod encryption;
 pub use sqlite::SqliteStorage;

@@ -1,9 +1,9 @@
 use clap::{Parser, Subcommand};
-use rust_flow::schema::WorkflowDefinition;
+use rust_flow::schema::{WorkflowDefinition, WorkflowLoader};
 use rust_flow::storage::{Storage, SqliteStorage, WorkflowEntity};
 use std::fs;
 use std::path::PathBuf;
-use anyhow::Result;
+use anyhow::{Result, Context};
 use uuid::Uuid;
 use chrono::Utc;
 
@@ -18,9 +18,15 @@ struct Args {
 enum Commands {
     /// Run a workflow from a file
     Run {
-        /// Path to the workflow YAML file
+        /// Path to workflow file (YAML/JSON)
         #[arg(short, long)]
-        file: PathBuf,
+        file: String,
+        /// Account ID (optional, for loading credentials)
+        #[arg(short, long)]
+        account_id: Option<Uuid>,
+        /// Database URL
+        #[arg(long, default_value = "sqlite:rustflow.db")]
+        db_url: String,
     },
     /// Initialize the database
     InitDb {
@@ -61,6 +67,33 @@ enum Commands {
         #[arg(long, default_value = "sqlite:rustflow.db")]
         db_url: String,
     },
+    /// Create a new credential
+    CreateCredential {
+        /// Credential name
+        #[arg(short, long)]
+        name: String,
+        /// Credential type (e.g., openai_api)
+        #[arg(short = 't', long)]
+        credential_type: String,
+        /// Secret data
+        #[arg(short, long)]
+        data: String,
+        /// Account ID
+        #[arg(short, long)]
+        account_id: Uuid,
+        /// Database URL
+        #[arg(long, default_value = "sqlite:rustflow.db")]
+        db_url: String,
+    },
+    /// List credentials for an account
+    ListCredentials {
+        /// Account ID
+        #[arg(short, long)]
+        account_id: Uuid,
+        /// Database URL
+        #[arg(long, default_value = "sqlite:rustflow.db")]
+        db_url: String,
+    },
 }
 
 #[tokio::main]
@@ -68,14 +101,35 @@ async fn main() -> Result<()> {
     let args = Args::parse();
 
     match args.command {
-        Commands::Run { file } => {
-            println!("Loading workflow from: {:?}", file);
-            let content = fs::read_to_string(&file)?;
+        Commands::Run { file, account_id, db_url } => {
+            let content = std::fs::read_to_string(&file)
+                .with_context(|| format!("Failed to read file: {}", file))?;
             
-            let definition: WorkflowDefinition = serde_yaml::from_str(&content)?;
+            println!("Loading workflow from: {:?}", file);
+            let loader = WorkflowLoader::new();
+            let workflow_def = loader.load(&content)?;
+            
             println!("Workflow parsed successfully. Building graph...");
 
-            let executor = definition.to_executor()?;
+            // Load credentials if account_id is provided
+            let mut secrets = std::collections::HashMap::new();
+            if let Some(acc_id) = account_id {
+                let storage = SqliteStorage::new(&db_url).await?;
+                let creds = storage.list_credentials(acc_id).await?;
+                for cred in creds {
+                    match rust_flow::storage::encryption::decrypt(&cred.data) {
+                        Ok(decrypted) => {
+                            secrets.insert(cred.id.to_string(), decrypted);
+                        }
+                        Err(e) => {
+                            eprintln!("Warning: Failed to decrypt credential {}: {}", cred.id, e);
+                        }
+                    }
+                }
+                println!("Loaded {} credentials.", secrets.len());
+            }
+
+            let mut executor = workflow_def.to_executor(&secrets)?;
             
             println!("Starting execution...");
             executor.run().await?;
@@ -120,6 +174,19 @@ async fn main() -> Result<()> {
             println!("Workflows for Account {}:", account_id);
             for wf in workflows {
                 println!("- {} (ID: {})", wf.name, wf.id);
+            }
+        }
+        Commands::CreateCredential { name, credential_type, data, account_id, db_url } => {
+            let storage = SqliteStorage::new(&db_url).await?;
+            let cred = storage.create_credential(&name, &credential_type, &data, account_id).await?;
+            println!("Credential created: {} (ID: {})", cred.name, cred.id);
+        }
+        Commands::ListCredentials { account_id, db_url } => {
+            let storage = SqliteStorage::new(&db_url).await?;
+            let creds = storage.list_credentials(account_id).await?;
+            println!("Credentials for Account {}:", account_id);
+            for cred in creds {
+                println!("- {} (Type: {}, ID: {})", cred.name, cred.credential_type, cred.id);
             }
         }
     }

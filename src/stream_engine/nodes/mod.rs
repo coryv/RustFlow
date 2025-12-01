@@ -10,6 +10,7 @@ pub mod time_trigger;
 pub mod webhook_trigger;
 pub mod function_node;
 pub mod code_node;
+pub mod agent_node;
 
 pub use manual_trigger::ManualTrigger;
 pub use set_data::SetData;
@@ -23,3 +24,5 @@ pub use time_trigger::TimeTrigger;
 pub use webhook_trigger::WebhookTrigger;
 pub use function_node::FunctionNode;
 pub use code_node::CodeNode;
+pub mod integration_node;
+pub use integration_node::IntegrationNode;

@@ -13,7 +13,7 @@ pub struct NodeDefinition {
     pub id: String,
     #[serde(rename = "type")]
     pub node_type: String,
-    #[serde(default)]
+    #[serde(default, alias = "config")]
     pub data: Value,
 }
 
@@ -28,9 +28,11 @@ pub struct EdgeDefinition {
 }
 
 use crate::stream_engine::{StreamExecutor, StreamNode, nodes};
+use crate::stream_engine::nodes::agent_node::AgentNode;
+use crate::integrations;
 
 impl WorkflowDefinition {
-    pub fn to_executor(&self) -> Result<StreamExecutor> {
+    pub fn to_executor(&self, secrets: &std::collections::HashMap<String, String>) -> Result<StreamExecutor> {
         let mut executor = StreamExecutor::new();
 
         for node_def in &self.nodes {
@@ -104,6 +106,36 @@ impl WorkflowDefinition {
                     let code = node_def.data.get("code").and_then(|v| v.as_str()).ok_or_else(|| anyhow!("Missing 'code' for code node"))?.to_string();
                     Box::new(nodes::CodeNode::new(lang, code))
                 },
+                "agent" => {
+                    let model = node_def.data.get("model").and_then(|v| v.as_str()).unwrap_or("gpt-4o").to_string();
+                    let system_prompt = node_def.data.get("system_prompt").and_then(|v| v.as_str()).unwrap_or("You are a helpful AI assistant.").to_string();
+                    let user_prompt = node_def.data.get("user_prompt").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                    let api_key = node_def.data.get("api_key").and_then(|v| v.as_str()).map(|s| s.to_string());
+                    let credential_id = node_def.data.get("credential_id").and_then(|v| v.as_str()).map(|s| s.to_string());
+                    let api_base = node_def.data.get("api_base").and_then(|v| v.as_str()).map(|s| s.to_string());
+                    let json_schema = node_def.data.get("json_schema").cloned();
+                    
+                    // Resolve API Key from secrets if credential_id is present
+                    let mut final_api_key = api_key;
+                    if let Some(ref cred_id) = credential_id {
+                        if let Some(secret) = secrets.get(cred_id) {
+                            final_api_key = Some(secret.clone());
+                        }
+                    }
+
+                    Box::new(AgentNode {
+                        model,
+                        system_prompt,
+                        user_prompt,
+                        api_key: final_api_key,
+                        credential_id,
+                        api_base,
+                        json_schema,
+                    })
+                },
+                "slack_post_message" => {
+                    Box::new(integrations::SlackPostMessage::new())
+                },
                 _ => return Err(anyhow!("Unknown node type: {}", node_def.node_type)),
             };
             executor.add_node(node_def.id.clone(), node);
@@ -114,5 +146,19 @@ impl WorkflowDefinition {
         }
 
         Ok(executor)
+    }
+}
+
+pub struct WorkflowLoader;
+
+impl WorkflowLoader {
+    pub fn new() -> Self {
+        Self
+    }
+
+    pub fn load(&self, content: &str) -> Result<WorkflowDefinition> {
+        // Try parsing as YAML (which is a superset of JSON)
+        let def: WorkflowDefinition = serde_yaml::from_str(content)?;
+        Ok(def)
     }
 }
