@@ -1,0 +1,38 @@
+nodes:
+  - id: "trigger"
+    type: "manual_trigger"
+  
+  - id: "data"
+    type: "set_data"
+    data:
+      amount: 200
+      currency: "EUR"
+
+  - id: "py_transform"
+    type: "code"
+    data:
+      lang: "python"
+      code: |
+        # input is available as a global
+        amount = input["amount"]
+        tax = amount * 0.15
+        total = amount + tax
+        
+        # set output global
+        output = {
+          "original": input,
+          "tax": tax,
+          "total": total,
+          "message": "Calculated via Python!"
+        }
+
+  - id: "log"
+    type: "console_output"
+
+edges:
+  - from: "trigger"
+    to: "data"
+  - from: "data"
+    to: "py_transform"
+  - from: "py_transform"
+    to: "log"

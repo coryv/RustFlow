@@ -1,0 +1,36 @@
+nodes:
+  - id: "trigger"
+    type: "manual_trigger"
+  
+  - id: "data_1"
+    type: "set_data"
+    data: "Stream 1 - Item A"
+  
+  - id: "data_2"
+    type: "set_data"
+    data: "Stream 2 - Item B"
+
+  - id: "union"
+    type: "union"
+    data:
+      mode: "interleaved" # Try "sequential" to see order change
+
+  - id: "log"
+    type: "console_output"
+
+edges:
+  - from: "trigger"
+    to: "data_1"
+  - from: "trigger"
+    to: "data_2"
+  
+  - from: "data_1"
+    to: "union"
+    to_port: 0
+  
+  - from: "data_2"
+    to: "union"
+    to_port: 1
+  
+  - from: "union"
+    to: "log"

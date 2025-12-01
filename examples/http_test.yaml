@@ -1,0 +1,30 @@
+nodes:
+  - id: "trigger"
+    type: "manual_trigger"
+  
+  - id: "user_data"
+    type: "set_data"
+    data:
+      id: "1"
+      name: "Test User"
+
+  - id: "http_get"
+    type: "http_request"
+    data:
+      method: "GET"
+      url: "https://jsonplaceholder.typicode.com/todos/{{ id }}"
+      headers:
+        X-Custom-Header: "RustFlow"
+
+  - id: "log"
+    type: "console_output"
+
+edges:
+  - from: "trigger"
+    to: "user_data"
+  
+  - from: "user_data"
+    to: "http_get"
+  
+  - from: "http_get"
+    to: "log"

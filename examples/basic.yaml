@@ -1,0 +1,16 @@
+nodes:
+  - id: "trigger"
+    type: "manual_trigger"
+  - id: "data"
+    type: "set_data"
+    data:
+      message: "Hello from YAML!"
+      count: 42
+  - id: "log"
+    type: "console_output"
+
+edges:
+  - from: "trigger"
+    to: "data"
+  - from: "data"
+    to: "log"

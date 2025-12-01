@@ -1,0 +1,63 @@
+nodes:
+  - id: "trigger"
+    type: "manual_trigger"
+  - id: "data_a"
+    type: "set_data"
+    data:
+      id: "1"
+      region: "US"
+      value: "A"
+  - id: "data_b"
+    type: "set_data"
+    data:
+      id: "1"
+      region: "EU"
+      value: "B"
+  - id: "router"
+    type: "router"
+    data:
+      key: "region"
+      value: "US"
+  - id: "log_us"
+    type: "console_output"
+  - id: "log_eu"
+    type: "console_output"
+  - id: "join"
+    type: "join"
+    data:
+      type: "key"
+      key: "id"
+  - id: "log_final"
+    type: "console_output"
+
+edges:
+  # Flow 1: Trigger -> Data A -> Router
+  - from: "trigger"
+    to: "data_a"
+  - from: "data_a"
+    to: "router"
+  
+  # Router Split
+  - from: "router"
+    from_port: 0
+    to: "log_us"
+  - from: "router"
+    from_port: 1
+    to: "log_eu"
+
+  # Flow 2: Trigger -> Data B -> Join (Right)
+  - from: "trigger"
+    to: "data_b"
+  - from: "data_b"
+    to: "join"
+    to_port: 1
+
+  # Join (Left) from Router US branch
+  - from: "router"
+    from_port: 0
+    to: "join"
+    to_port: 0
+
+  # Final Log
+  - from: "join"
+    to: "log_final"
