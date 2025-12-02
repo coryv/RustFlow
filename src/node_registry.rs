@@ -151,6 +151,22 @@ pub fn get_node_registry() -> Vec<NodeType> {
             description: Some("Log data to console".to_string()),
             properties: vec![],
         },
+        NodeType {
+            id: "delay".to_string(),
+            label: "Delay".to_string(),
+            category: "Action".to_string(),
+            description: Some("Pause execution for a duration".to_string()),
+            properties: vec![
+                NodeProperty {
+                    name: "duration_ms".to_string(),
+                    label: "Duration (ms)".to_string(),
+                    property_type: "number".to_string(),
+                    options: None,
+                    default: Some("1000".to_string()),
+                    required: true,
+                },
+            ],
+        },
 
         // --- Logic ---
         NodeType {

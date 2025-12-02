@@ -277,3 +277,165 @@
 .border-gray {
     border-color: #e5e7eb;
 }
+
+/* App Layout */
+.app-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.main-content {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Toolbar Styles */
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    z-index: 20;
+    height: 60px;
+}
+
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #111827;
+}
+
+.workflow-name-input {
+    border: none;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #374151;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    width: 250px;
+    transition: all 0.2s;
+}
+
+.workflow-name-input:hover {
+    background-color: #f3f4f6;
+}
+
+.workflow-name-input:focus {
+    outline: none;
+    background-color: #f3f4f6;
+    box-shadow: 0 0 0 2px #e5e7eb;
+}
+
+.divider {
+    width: 1px;
+    height: 24px;
+    background-color: #e5e7eb;
+    margin: 0 0.5rem;
+}
+
+.toolbar-button {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+.toolbar-button.run {
+    background-color: #ecfdf5;
+    color: #059669;
+    border-color: #a7f3d0;
+}
+
+.toolbar-button.run:hover:not(.disabled) {
+    background-color: #d1fae5;
+}
+
+.toolbar-button.stop {
+    background-color: #fef2f2;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.toolbar-button.stop:hover:not(.disabled) {
+    background-color: #fee2e2;
+}
+
+.toolbar-button.save {
+    background-color: #ffffff;
+    color: #374151;
+    border-color: #d1d5db;
+}
+
+.toolbar-button.save:hover {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.toolbar-button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f3f4f6;
+    color: #9ca3af;
+    border-color: #e5e7eb;
+}
+
+/* React Flow Controls Override */
+.react-flow__controls {
+    box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.08);
+    background-color: #ffffff;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.react-flow__controls-button {
+    background-color: #ffffff;
+    border-bottom: 1px solid #eeeeee;
+    color: #374151 !important;
+    /* Force dark color for icons */
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.react-flow__controls-button:hover {
+    background-color: #f3f4f6;
+}
+
+.react-flow__controls-button svg {
+    fill: currentColor;
+    width: 16px;
+    height: 16px;
+}
+
+.react-flow__controls-button:last-child {
+    border-bottom: none;
+}

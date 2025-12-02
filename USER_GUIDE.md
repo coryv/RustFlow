@@ -87,3 +87,145 @@ RustFlow uses a push-based streaming engine.
 -   **Concurrency**: Parallel branches run on separate tasks.
 -   **Splitting**: One output can feed multiple inputs (Broadcast).
 -   **Merging**: Nodes like `Join` and `Union` handle multi-input synchronization.
+
+## 📝 Examples
+
+### Basic Workflow
+A simple workflow that triggers manually, sets some data, and logs it.
+```yaml
+nodes:
+  - id: "trigger"
+    type: "manual_trigger"
+  - id: "data"
+    type: "set_data"
+    config:
+      message: "Hello from RustFlow!"
+      count: 42
+  - id: "log"
+    type: "console_output"
+
+edges:
+  - from: "trigger"
+    to: "data"
+  - from: "data"
+    to: "log"
+```
+
+### AI Agent Workflow
+An advanced workflow using an LLM to analyze text, with structured output enforcement.
+```yaml
+nodes:
+  - id: "trigger"
+    type: "manual_trigger"
+  - id: "data"
+    type: "set_data"
+    config:
+      bio: "I love coding in Rust and building scalable systems."
+  - id: "agent"
+    type: "agent"
+    config:
+      model: "gpt-4"
+      system_prompt: "You are a helpful assistant. Extract sentiment and keywords."
+      user_prompt: "Analyze this bio: {{ bio }}"
+      credential_id: "YOUR_CREDENTIAL_UUID"
+      json_schema:
+        type: "object"
+        properties:
+          sentiment: { type: "string" }
+          keywords: { type: "array", items: { type: "string" } }
+        required: ["sentiment", "keywords"]
+  - id: "log"
+    type: "console_output"
+
+edges:
+  - from: "trigger"
+    to: "data"
+  - from: "data"
+    to: "agent"
+  - from: "agent"
+    to: "log"
+```
+
+### Split & Join Logic
+Demonstrates branching logic and joining streams based on a key.
+```yaml
+nodes:
+  - id: "trigger"
+    type: "manual_trigger"
+  - id: "data_us"
+    type: "set_data"
+    config: { id: "1", region: "US", value: "A" }
+  - id: "data_eu"
+    type: "set_data"
+    config: { id: "1", region: "EU", value: "B" }
+  - id: "router"
+    type: "router"
+    config:
+      key: "region"
+      value: "US"
+  - id: "join"
+    type: "join"
+    config:
+      type: "key"
+      key: "id"
+  - id: "log"
+    type: "console_output"
+
+edges:
+  # Flow 1: US Data -> Router -> Join (Left)
+  - from: "trigger"
+    to: "data_us"
+  - from: "data_us"
+    to: "router"
+  - from: "router"
+    from_port: 0 # Matches "US"
+    to: "join"
+    to_port: 0
+
+  # Flow 2: EU Data -> Join (Right)
+  - from: "trigger"
+    to: "data_eu"
+  - from: "data_eu"
+    to: "join"
+    to_port: 1
+
+  # Final Output
+  - from: "join"
+    to: "log"
+```
+
+### Index Join (Inner/Outer)
+Joins two streams by their position (1st item with 1st item, etc.). Supports `inner`, `left`, `right`, and `outer` modes.
+
+```yaml
+nodes:
+  - id: "trigger"
+    type: "manual_trigger"
+  - id: "data_a"
+    type: "set_data"
+    config: { items: ["A1", "A2"] }
+  - id: "data_b"
+    type: "set_data"
+    config: { items: ["B1", "B2", "B3"] }
+  - id: "join"
+    type: "join"
+    config:
+      type: "index"
+      mode: "left" # Options: inner, left, right, outer
+  - id: "log"
+    type: "console_output"
+
+edges:
+  - from: "trigger"
+    to: "data_a"
+  - from: "trigger"
+    to: "data_b"
+  - from: "data_a"
+    to: "join"
+    to_port: 0
+  - from: "data_b"
+    to: "join"
+    to_port: 1
+  - from: "join"
+    to: "log"
+```

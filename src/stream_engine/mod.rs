@@ -13,4 +13,5 @@ pub trait StreamNode: Send + Sync {
 
 pub mod executor;
 pub mod nodes;
+pub mod factory;
 pub use executor::StreamExecutor;

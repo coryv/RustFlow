@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState, useEffect } from 'react';
 import {
     ReactFlow,
     MiniMap,
@@ -26,6 +26,8 @@ interface FlowCanvasProps {
     onEdgesChange: any;
     setNodes: any;
     setEdges: any;
+    edgeActivity?: Record<string, number>;
+    nodeStatus?: Record<string, string>;
 }
 
 export const FlowCanvas: React.FC<FlowCanvasProps> = ({
@@ -36,9 +38,62 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({
     onEdgesChange,
     setNodes,
     setEdges,
+    edgeActivity = {},
+    nodeStatus = {},
 }) => {
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
     const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
+
+    // Effect to handle node status updates
+    useEffect(() => {
+        setNodes((nds: Node[]) =>
+            nds.map((node) => {
+                const status = nodeStatus[node.id];
+                let style = { ...node.style };
+
+                if (status === 'running') {
+                    style = { ...style, border: '2px solid #007bff', boxShadow: '0 0 10px #007bff' };
+                } else if (status === 'completed') {
+                    style = { ...style, border: '2px solid #28a745', boxShadow: 'none' };
+                } else if (status === 'failed') {
+                    style = { ...style, border: '2px solid #dc3545', boxShadow: 'none' };
+                } else {
+                    // Reset or default
+                    style = { ...style, border: '1px solid #777', boxShadow: 'none' };
+                }
+
+                return { ...node, style };
+            })
+        );
+    }, [nodeStatus, setNodes]);
+
+    // Effect to handle edge highlighting
+    useEffect(() => {
+        if (Object.keys(edgeActivity).length === 0) return;
+
+        setEdges((eds: Edge[]) =>
+            eds.map((edge) => {
+                const key = `${edge.source}-${edge.target}`;
+                const lastActive = edgeActivity[key];
+
+                // If active in last 2 seconds, highlight
+                if (lastActive && Date.now() - lastActive < 2000) {
+                    return {
+                        ...edge,
+                        animated: true,
+                        style: { ...edge.style, stroke: '#ff0072', strokeWidth: 3 },
+                    };
+                }
+
+                // Reset style if not active
+                return {
+                    ...edge,
+                    animated: false,
+                    style: { ...edge.style, stroke: '#b1b1b7', strokeWidth: 1 },
+                };
+            })
+        );
+    }, [edgeActivity, setEdges]);
 
     const onConnect = useCallback(
         (params: Connection) => setEdges((eds: Edge[]) => addEdge(params, eds)),

@@ -14,3 +14,12 @@ export interface NodeType {
     description?: string;
     properties: NodeProperty[];
 }
+
+export interface ExecutionEvent {
+    type: 'NodeStart' | 'NodeFinish' | 'EdgeData' | 'NodeError';
+    node_id?: string;
+    from?: string;
+    to?: string;
+    value?: any;
+    error?: string;
+}

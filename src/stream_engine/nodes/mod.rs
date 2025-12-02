@@ -1,30 +1,30 @@
-pub mod manual_trigger;
-pub mod set_data;
-pub mod console_output;
-pub mod router_node;
-pub mod join_node;
-pub mod file_source;
-pub mod union_node;
-pub mod http_request_node;
-pub mod time_trigger;
-pub mod webhook_trigger;
-pub mod function_node;
-pub mod code_node;
-pub mod agent_node;
+pub mod triggers;
+pub mod actions;
+pub mod logic;
+pub mod data;
+pub mod ai;
+pub mod integrations;
+pub mod delay_node;
 
-pub use manual_trigger::ManualTrigger;
-pub use set_data::SetData;
-pub use console_output::ConsoleOutput;
-pub use router_node::RouterNode;
-pub use join_node::{JoinNode, JoinType};
-pub use file_source::FileSource;
-pub use union_node::{UnionNode, UnionMode};
-pub use http_request_node::HttpRequestNode;
-pub use time_trigger::TimeTrigger;
-pub use webhook_trigger::WebhookTrigger;
-pub use function_node::FunctionNode;
-pub use code_node::CodeNode;
-pub mod integration_node;
-pub use integration_node::IntegrationNode;
-pub mod html_extract_node;
-pub use html_extract_node::{HtmlExtractNode, ExtractMode};
+// Re-export types for convenience and backward compatibility
+pub use triggers::manual_trigger::ManualTrigger;
+pub use triggers::time_trigger::TimeTrigger;
+pub use triggers::webhook_trigger::WebhookTrigger;
+pub use data::file_source::FileSource;
+
+pub use actions::http_request_node::HttpRequestNode;
+pub use actions::console_output::ConsoleOutput;
+pub use actions::set_data::SetData;
+pub use actions::code_node::CodeNode;
+pub use actions::function_node::FunctionNode;
+
+pub use logic::router_node::RouterNode;
+
+pub use data::join_node::{JoinNode, JoinType, JoinMode};
+pub use data::union_node::{UnionNode, UnionMode};
+pub use data::html_extract_node::{HtmlExtractNode, ExtractMode};
+
+pub use ai::agent_node::AgentNode;
+
+pub use integrations::integration_node::IntegrationNode;
+pub use delay_node::DelayNode;

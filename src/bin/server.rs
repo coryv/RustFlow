@@ -4,12 +4,15 @@ use axum::{
     Json,
     response::IntoResponse,
     http::{StatusCode, Method},
+    extract::{State, Path, ws::{WebSocketUpgrade, WebSocket, Message}},
 };
 use tower_http::cors::{CorsLayer, Any};
 use serde::{Deserialize, Serialize};
 use rust_flow::schema::WorkflowLoader;
+use rust_flow::job_manager::{JobManager, JobStatus};
 use std::net::SocketAddr;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use futures::{sink::SinkExt, stream::StreamExt};
 
 #[derive(Deserialize)]
 struct RunRequest {
@@ -18,23 +21,20 @@ struct RunRequest {
 
 #[derive(Serialize)]
 struct RunResponse {
+    job_id: Option<String>,
     status: String,
-    logs: Vec<String>,
     error: Option<String>,
 }
 
-// Simple in-memory log capture (for demo purposes)
-// In a real app, we'd use a more sophisticated logging/tracing setup
-struct LogCapture {
-    logs: Arc<Mutex<Vec<String>>>,
+#[derive(Serialize)]
+struct JobStatusResponse {
+    id: String,
+    status: String,
+    logs: Vec<String>,
 }
 
-impl LogCapture {
-    fn new() -> Self {
-        Self {
-            logs: Arc::new(Mutex::new(Vec::new())),
-        }
-    }
+struct AppState {
+    job_manager: Arc<JobManager>,
 }
 
 #[tokio::main]
@@ -47,28 +47,37 @@ async fn main() {
         .allow_methods([Method::GET, Method::POST])
         .allow_headers(Any);
 
+    let job_manager = Arc::new(JobManager::new());
+    let state = Arc::new(AppState { job_manager });
+
     let app = Router::new()
         .route("/api/run", post(run_workflow))
+        .route("/api/jobs/{id}", get(get_job_status))
+        .route("/api/ws/{id}", get(ws_handler))
         .route("/api/node-types", get(get_node_types))
         .route("/health", get(|| async { "OK" }))
-        .layer(cors);
+        .layer(cors)
+        .with_state(state);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-    println!("Server listening on {}", addr);
+    tracing::info!("Server listening on {}", addr);
     
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
 
-async fn run_workflow(Json(payload): Json<RunRequest>) -> impl IntoResponse {
-    println!("Received workflow execution request");
+async fn run_workflow(
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<RunRequest>
+) -> impl IntoResponse {
+    tracing::info!("Received workflow execution request");
     
     let loader = WorkflowLoader::new();
     let workflow_def = match loader.load(&payload.workflow) {
         Ok(def) => def,
         Err(e) => return (StatusCode::BAD_REQUEST, Json(RunResponse {
+            job_id: None,
             status: "error".to_string(),
-            logs: vec![],
             error: Some(format!("Failed to parse workflow: {}", e)),
         })),
     };
@@ -79,34 +88,82 @@ async fn run_workflow(Json(payload): Json<RunRequest>) -> impl IntoResponse {
     let executor = match workflow_def.to_executor(&secrets) {
         Ok(ex) => ex,
         Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(RunResponse {
+            job_id: None,
             status: "error".to_string(),
-            logs: vec![],
             error: Some(format!("Failed to build executor: {}", e)),
         })),
     };
 
-    // Run the workflow
-    // Note: This runs synchronously in the handler for simplicity.
-    // For long-running workflows, we should spawn a task and return a job ID.
-    match executor.run().await {
-        Ok(_) => {
-            (StatusCode::OK, Json(RunResponse {
-                status: "success".to_string(),
-                logs: vec!["Workflow executed successfully".to_string()], // Placeholder for real logs
-                error: None,
-            }))
-        },
-        Err(e) => {
-            (StatusCode::INTERNAL_SERVER_ERROR, Json(RunResponse {
-                status: "error".to_string(),
-                logs: vec![],
-                error: Some(format!("Execution failed: {}", e)),
-            }))
-        }
+    // Create job and spawn execution
+    let job_id = state.job_manager.create_job();
+    let manager = state.job_manager.clone();
+    let id_clone = job_id.clone();
+
+    tokio::spawn(async move {
+        manager.run_job(id_clone, executor).await;
+    });
+
+    (StatusCode::OK, Json(RunResponse {
+        job_id: Some(job_id),
+        status: "pending".to_string(),
+        error: None,
+    }))
+}
+
+async fn get_job_status(
+    State(state): State<Arc<AppState>>,
+    Path(id): Path<String>
+) -> impl IntoResponse {
+    if let Some(status) = state.job_manager.get_job(&id) {
+        let logs = state.job_manager.get_job_logs(&id).unwrap_or_default();
+        let status_str = match status {
+            JobStatus::Pending => "pending",
+            JobStatus::Running => "running",
+            JobStatus::Completed => "completed",
+            JobStatus::Failed(_) => "failed",
+        };
+
+        (StatusCode::OK, Json(JobStatusResponse {
+            id,
+            status: status_str.to_string(),
+            logs,
+        }))
+    } else {
+        (StatusCode::NOT_FOUND, Json(JobStatusResponse {
+            id,
+            status: "not_found".to_string(),
+            logs: vec![],
+        }))
     }
 }
 
 async fn get_node_types() -> impl IntoResponse {
     let registry = rust_flow::node_registry::get_node_registry();
     Json(registry)
+}
+
+async fn ws_handler(
+    ws: WebSocketUpgrade,
+    Path(id): Path<String>,
+    State(state): State<Arc<AppState>>,
+) -> impl IntoResponse {
+    ws.on_upgrade(move |socket| handle_socket(socket, id, state))
+}
+
+async fn handle_socket(mut socket: WebSocket, job_id: String, state: Arc<AppState>) {
+    let mut rx = match state.job_manager.subscribe_to_events(&job_id) {
+        Some(rx) => rx,
+        None => {
+            let _ = socket.send(Message::Text("Job not found".into())).await;
+            return;
+        }
+    };
+
+    while let Ok(event) = rx.recv().await {
+        if let Ok(msg) = serde_json::to_string(&event) {
+            if socket.send(Message::Text(msg.into())).await.is_err() {
+                break;
+            }
+        }
+    }
 }

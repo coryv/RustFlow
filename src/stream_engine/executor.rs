@@ -1,14 +1,19 @@
 use std::collections::HashMap;
-use tokio::sync::mpsc;
+use tokio::sync::{mpsc, broadcast};
 use tokio::task::JoinSet;
 use crate::stream_engine::StreamNode;
-use anyhow::{Result, anyhow};
+use crate::schema::ExecutionEvent;
+use anyhow::{Result, anyhow, Context};
 use serde_json::Value;
+
+type InputsMap = HashMap<String, HashMap<usize, Vec<mpsc::Receiver<Value>>>>;
+type OutputsMap = HashMap<String, HashMap<usize, Vec<mpsc::Sender<Value>>>>;
 
 pub struct StreamExecutor {
     nodes: HashMap<String, Box<dyn StreamNode>>,
     // Edge: (from_id, from_port, to_id, to_port)
     edges: Vec<(String, usize, String, usize)>,
+    event_sender: Option<broadcast::Sender<ExecutionEvent>>,
 }
 
 impl StreamExecutor {
@@ -16,7 +21,12 @@ impl StreamExecutor {
         Self {
             nodes: HashMap::new(),
             edges: Vec::new(),
+            event_sender: None,
         }
+    }
+
+    pub fn set_event_sender(&mut self, sender: broadcast::Sender<ExecutionEvent>) {
+        self.event_sender = Some(sender);
     }
 
     pub fn add_node(&mut self, id: String, node: Box<dyn StreamNode>) {
@@ -28,10 +38,29 @@ impl StreamExecutor {
     }
 
     pub async fn run(self) -> Result<()> {
-        // NodeID -> PortIndex -> Receiver
-        let mut inputs: HashMap<String, HashMap<usize, Vec<mpsc::Receiver<Value>>>> = HashMap::new();
-        // NodeID -> PortIndex -> Senders
-        let mut outputs: HashMap<String, HashMap<usize, Vec<mpsc::Sender<Value>>>> = HashMap::new();
+        let (mut inputs, mut outputs) = self.initialize_channels()?;
+        
+        let mut set = JoinSet::new();
+
+        for (id, node) in self.nodes {
+            let node_inputs = Self::prepare_node_inputs(&id, &mut inputs)?;
+            let node_outputs = Self::prepare_node_outputs(&id, &mut outputs);
+
+            set.spawn(async move {
+                node.run(node_inputs, node_outputs).await
+            });
+        }
+
+        while let Some(res) = set.join_next().await {
+            res.context("Task join error")??;
+        }
+
+        Ok(())
+    }
+
+    fn initialize_channels(&self) -> Result<(InputsMap, OutputsMap)> {
+        let mut inputs: InputsMap = HashMap::new();
+        let mut outputs: OutputsMap = HashMap::new();
 
         // Initialize maps
         for id in self.nodes.keys() {
@@ -41,11 +70,35 @@ impl StreamExecutor {
 
         // Create channels for edges
         for (from, from_port, to, to_port) in &self.edges {
-            let (tx, rx) = mpsc::channel::<Value>(100);
+            let (tx, mut rx) = mpsc::channel::<Value>(100);
+            let (tap_tx, tap_rx) = mpsc::channel::<Value>(100);
             
-            // Add rx to destination
+            // Spawn Tap Task
+            let event_sender = self.event_sender.clone();
+            let from_id = from.clone();
+            let to_id = to.clone();
+            
+            tokio::spawn(async move {
+                while let Some(val) = rx.recv().await {
+                    // Broadcast event
+                    if let Some(sender) = &event_sender {
+                        let _ = sender.send(ExecutionEvent::EdgeData {
+                            from: from_id.clone(),
+                            to: to_id.clone(),
+                            value: val.clone(),
+                        });
+                    }
+                    
+                    // Forward to destination
+                    if tap_tx.send(val).await.is_err() {
+                        break;
+                    }
+                }
+            });
+
+            // Add tap_rx to destination
             if let Some(node_inputs) = inputs.get_mut(to) {
-                node_inputs.entry(*to_port).or_default().push(rx);
+                node_inputs.entry(*to_port).or_default().push(tap_rx);
             } else {
                 return Err(anyhow!("Edge points to unknown node: {}", to));
             }
@@ -53,94 +106,75 @@ impl StreamExecutor {
             // Add tx to source
             if let Some(node_outputs) = outputs.get_mut(from) {
                 node_outputs.entry(*from_port).or_default().push(tx);
+            } else {
+                 return Err(anyhow!("Edge starts from unknown node: {}", from));
             }
         }
 
-        let mut set = JoinSet::new();
+        Ok((inputs, outputs))
+    }
 
-        for (id, node) in self.nodes {
-            // Flatten inputs: We need a Vec<Receiver>. 
-            // Assumption: Nodes expect inputs at specific indices.
-            // We'll create a sparse vector based on the max port index.
-            let mut node_input_map = inputs.remove(&id).unwrap();
-            let max_input_port = node_input_map.keys().max().copied().unwrap_or(0);
-            let mut node_inputs_vec = Vec::new();
-            
-            for i in 0..=max_input_port {
-                // If multiple inputs on one port, we need to merge them?
-                // For now, let's assume 1 input per port OR the node handles multiple receivers?
-                // The trait takes Vec<Receiver>. Let's just flatten them in order of ports?
-                // Actually, the trait signature `inputs: Vec<Receiver>` implies a list of inputs.
-                // If we have ports, `inputs[0]` should be Port 0.
-                // If Port 0 has multiple connections (Fan-In), we should probably merge them into ONE receiver 
-                // BEFORE passing to the node, OR pass a Vec<Receiver> for Port 0?
-                // To keep it simple: We will MERGE multiple edges to the same port into a single channel.
-                
-                if let Some(mut rxs) = node_input_map.remove(&i) {
-                    if rxs.is_empty() {
-                        // Create dummy channel? Or just don't push?
-                        // If the node expects input at index i, we must provide it.
-                        let (_tx, rx) = mpsc::channel(1);
-                        node_inputs_vec.push(rx);
-                    } else if rxs.len() == 1 {
-                        node_inputs_vec.push(rxs.pop().unwrap());
-                    } else {
-                        // Merge multiple inputs to one receiver
-                        let (tx, rx) = mpsc::channel(100);
-                        for mut r in rxs {
-                            let tx_clone = tx.clone();
-                            tokio::spawn(async move {
-                                while let Some(val) = r.recv().await {
-                                    let _ = tx_clone.send(val).await;
-                                }
-                            });
-                        }
-                        node_inputs_vec.push(rx);
-                    }
-                } else {
-                    // No input for this port, provide dummy closed receiver
+    fn prepare_node_inputs(id: &str, inputs: &mut InputsMap) -> Result<Vec<mpsc::Receiver<Value>>> {
+        let mut node_input_map = inputs.remove(id).ok_or_else(|| anyhow!("Node inputs not found for {}", id))?;
+        let max_input_port = node_input_map.keys().max().copied().unwrap_or(0);
+        let mut node_inputs_vec = Vec::new();
+        
+        for i in 0..=max_input_port {
+            if let Some(mut rxs) = node_input_map.remove(&i) {
+                if rxs.is_empty() {
                     let (_tx, rx) = mpsc::channel(1);
                     node_inputs_vec.push(rx);
-                }
-            }
-
-            // Prepare outputs
-            let mut node_output_map = outputs.remove(&id).unwrap();
-            let max_output_port = node_output_map.keys().max().copied().unwrap_or(0);
-            let mut node_outputs_vec = Vec::new();
-
-            for i in 0..=max_output_port {
-                let txs = node_output_map.remove(&i).unwrap_or_default();
-                
-                // We need to provide ONE sender to the node for this port.
-                // If there are multiple downstream edges (Fan-Out), we broadcast.
-                let (internal_tx, mut internal_rx) = mpsc::channel::<Value>(100);
-                
-                if !txs.is_empty() {
-                    tokio::spawn(async move {
-                        while let Some(val) = internal_rx.recv().await {
-                            for tx in &txs {
-                                let _ = tx.send(val.clone()).await;
-                            }
-                        }
-                    });
+                } else if rxs.len() == 1 {
+                    node_inputs_vec.push(rxs.pop().unwrap());
                 } else {
-                     tokio::spawn(async move {
-                        while let Some(_) = internal_rx.recv().await {}
-                    });
+                    // Merge multiple inputs to one receiver
+                    let (tx, rx) = mpsc::channel(100);
+                    for mut r in rxs {
+                        let tx_clone = tx.clone();
+                        tokio::spawn(async move {
+                            while let Some(val) = r.recv().await {
+                                let _ = tx_clone.send(val).await;
+                            }
+                        });
+                    }
+                    node_inputs_vec.push(rx);
                 }
-                node_outputs_vec.push(internal_tx);
+            } else {
+                // No input for this port, provide dummy closed receiver
+                let (_tx, rx) = mpsc::channel(1);
+                node_inputs_vec.push(rx);
             }
-
-            set.spawn(async move {
-                node.run(node_inputs_vec, node_outputs_vec).await
-            });
         }
+        Ok(node_inputs_vec)
+    }
 
-        while let Some(res) = set.join_next().await {
-            res??;
+    fn prepare_node_outputs(id: &str, outputs: &mut OutputsMap) -> Vec<mpsc::Sender<Value>> {
+        let mut node_output_map = outputs.remove(id).unwrap_or_default();
+        let max_output_port = node_output_map.keys().max().copied().unwrap_or(0);
+        let mut node_outputs_vec = Vec::new();
+
+        for i in 0..=max_output_port {
+            let txs = node_output_map.remove(&i).unwrap_or_default();
+            
+            // We need to provide ONE sender to the node for this port.
+            // If there are multiple downstream edges (Fan-Out), we broadcast.
+            let (internal_tx, mut internal_rx) = mpsc::channel::<Value>(100);
+            
+            if !txs.is_empty() {
+                tokio::spawn(async move {
+                    while let Some(val) = internal_rx.recv().await {
+                        for tx in &txs {
+                            let _ = tx.send(val.clone()).await;
+                        }
+                    }
+                });
+            } else {
+                 tokio::spawn(async move {
+                    while let Some(_) = internal_rx.recv().await {}
+                });
+            }
+            node_outputs_vec.push(internal_tx);
         }
-
-        Ok(())
+        node_outputs_vec
     }
 }

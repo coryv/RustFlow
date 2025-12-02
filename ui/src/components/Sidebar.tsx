@@ -9,7 +9,6 @@ import {
     Bot,
     Cpu,
     FileText,
-    Layers,
     ChevronDown,
     ChevronRight
 } from 'lucide-react';
@@ -89,12 +88,6 @@ export const Sidebar: React.FC = () => {
 
     return (
         <div className="sidebar">
-            <div className="sidebar-header">
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Layers className="mr-2" /> RustFlow
-                </div>
-            </div>
-
             {['Triggers', 'Actions'].map(section => (
                 <div key={section} className="sidebar-section">
                     <div
