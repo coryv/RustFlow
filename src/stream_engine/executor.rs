@@ -46,8 +46,33 @@ impl StreamExecutor {
             let node_inputs = Self::prepare_node_inputs(&id, &mut inputs)?;
             let node_outputs = Self::prepare_node_outputs(&id, &mut outputs);
 
+            let event_sender = self.event_sender.clone();
+            let node_id = id.clone();
+
             set.spawn(async move {
-                node.run(node_inputs, node_outputs).await
+                // Emit NodeStart
+                if let Some(sender) = &event_sender {
+                    let _ = sender.send(ExecutionEvent::NodeStart { node_id: node_id.clone() });
+                }
+
+                let result = node.run(node_inputs, node_outputs).await;
+
+                // Emit NodeFinish or NodeError
+                if let Some(sender) = &event_sender {
+                    match &result {
+                        Ok(_) => {
+                            let _ = sender.send(ExecutionEvent::NodeFinish { node_id: node_id });
+                        }
+                        Err(e) => {
+                            let _ = sender.send(ExecutionEvent::NodeError { 
+                                node_id: node_id, 
+                                error: e.to_string() 
+                            });
+                        }
+                    }
+                }
+                
+                result
             });
         }
 

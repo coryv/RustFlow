@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
-use anyhow::{Result, anyhow};
+use serde_json::Value;
+use anyhow::Result;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct WorkflowDefinition {
@@ -35,10 +35,7 @@ pub enum ExecutionEvent {
     NodeError { node_id: String, error: String },
 }
 
-use crate::stream_engine::{StreamExecutor, StreamNode, nodes};
-use crate::stream_engine::nodes::AgentNode;
-use crate::stream_engine::nodes::{HtmlExtractNode, ExtractMode};
-use crate::integrations;
+use crate::stream_engine::StreamExecutor;
 
 impl WorkflowDefinition {
     pub fn to_executor(&self, secrets: &std::collections::HashMap<String, String>) -> Result<StreamExecutor> {

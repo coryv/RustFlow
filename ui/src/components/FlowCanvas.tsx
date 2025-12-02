@@ -95,6 +95,38 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({
         );
     }, [edgeActivity, setEdges]);
 
+    // Effect to clear edge highlighting after 2 seconds
+    useEffect(() => {
+        if (Object.keys(edgeActivity).length === 0) return;
+
+        const interval = setInterval(() => {
+            setEdges((eds: Edge[]) =>
+                eds.map((edge) => {
+                    const key = `${edge.source}-${edge.target}`;
+                    const lastActive = edgeActivity[key];
+
+                    // If active in last 2 seconds, keep highlight
+                    if (lastActive && Date.now() - lastActive < 2000) {
+                        return edge; // No change needed if already highlighted correctly
+                    }
+
+                    // If it WAS highlighted but shouldn't be anymore, reset it
+                    if (edge.animated) {
+                        return {
+                            ...edge,
+                            animated: false,
+                            style: { ...edge.style, stroke: '#b1b1b7', strokeWidth: 1 },
+                        };
+                    }
+
+                    return edge;
+                })
+            );
+        }, 500); // Check every 500ms
+
+        return () => clearInterval(interval);
+    }, [edgeActivity, setEdges]);
+
     const onConnect = useCallback(
         (params: Connection) => setEdges((eds: Edge[]) => addEdge(params, eds)),
         [setEdges],

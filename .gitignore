@@ -19,3 +19,4 @@ dist/
 
 logs/
 *.log
+test-workflows/

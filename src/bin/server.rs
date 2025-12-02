@@ -12,7 +12,7 @@ use rust_flow::schema::WorkflowLoader;
 use rust_flow::job_manager::{JobManager, JobStatus};
 use std::net::SocketAddr;
 use std::sync::Arc;
-use futures::{sink::SinkExt, stream::StreamExt};
+use futures::sink::SinkExt;
 
 #[derive(Deserialize)]
 struct RunRequest {
