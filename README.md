@@ -56,7 +56,8 @@ cargo run --bin cli -- run --file hello.yaml
 
 ## 📚 Documentation
 
-For detailed usage instructions, node reference, and advanced features, see the [User Guide](USER_GUIDE.md).
+-   [User Guide](USER_GUIDE.md): Detailed usage instructions, node reference, and advanced features.
+-   [Integration Guide](INTEGRATION_GUIDE.md): Learn how to add new integrations using YAML.
 
 ## 🏗️ Project Structure
 

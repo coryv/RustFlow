@@ -137,10 +137,12 @@ impl WorkflowDefinition {
                     })
                 },
                 "slack_post_message" => {
-                    Box::new(integrations::SlackPostMessage::new())
+                    integrations::create_integration_node("Slack", "Post Message")
+                        .ok_or_else(|| anyhow!("Integration node Slack/Post Message not found"))?
                 },
                 "notion_create_page" => {
-                    Box::new(integrations::NotionCreatePage::new())
+                    integrations::create_integration_node("Notion", "Create Page")
+                        .ok_or_else(|| anyhow!("Integration node Notion/Create Page not found"))?
                 },
                 "html_extract" => {
                     let selector = node_def.data.get("selector").and_then(|v| v.as_str()).ok_or_else(|| anyhow!("Missing 'selector' for html_extract"))?.to_string();

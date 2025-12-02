@@ -1,0 +1,241 @@
+name: "Notion"
+nodes:
+  - name: "Create Page"
+    type: "action"
+    implementation:
+      type: "http"
+      method: "POST"
+      url: "https://api.notion.com/v1/pages"
+      headers:
+        Authorization: "Bearer {{ credential.token }}"
+        Notion-Version: "2022-06-28"
+        Content-Type: "application/json"
+      body:
+        parent: { "database_id": "{{ input.database_id }}" }
+        properties:
+          Name: 
+            title: 
+              - text: { content: "{{ input.title }}" }
+          Summary:
+            rich_text:
+              - text: { content: "{{ input.summary }}" }
+    properties:
+      - name: "credential_id"
+        label: "Credential ID"
+        type: "text"
+        required: true
+      - name: "database_id"
+        label: "Database ID"
+        type: "text"
+        required: true
+      - name: "title"
+        label: "Title"
+        type: "text"
+        required: true
+      - name: "summary"
+        label: "Summary"
+        type: "text"
+        required: false
+
+  - name: "Retrieve Page"
+    type: "action"
+    implementation:
+      type: "http"
+      method: "GET"
+      url: "https://api.notion.com/v1/pages/{{ input.page_id }}"
+      headers:
+        Authorization: "Bearer {{ credential.token }}"
+        Notion-Version: "2022-06-28"
+    properties:
+      - name: "credential_id"
+        label: "Credential ID"
+        type: "text"
+        required: true
+      - name: "page_id"
+        label: "Page ID"
+        type: "text"
+        required: true
+
+  - name: "Update Page"
+    type: "action"
+    implementation:
+      type: "http"
+      method: "PATCH"
+      url: "https://api.notion.com/v1/pages/{{ input.page_id }}"
+      headers:
+        Authorization: "Bearer {{ credential.token }}"
+        Notion-Version: "2022-06-28"
+        Content-Type: "application/json"
+      body:
+        properties: "{{ input.properties }}"
+        archived: "{{ input.archived }}"
+    properties:
+      - name: "credential_id"
+        label: "Credential ID"
+        type: "text"
+        required: true
+      - name: "page_id"
+        label: "Page ID"
+        type: "text"
+        required: true
+      - name: "properties"
+        label: "Properties (JSON)"
+        type: "json"
+        required: false
+      - name: "archived"
+        label: "Archived"
+        type: "boolean"
+        required: false
+
+  - name: "Retrieve Block Children"
+    type: "action"
+    implementation:
+      type: "http"
+      method: "GET"
+      url: "https://api.notion.com/v1/blocks/{{ input.block_id }}/children"
+      headers:
+        Authorization: "Bearer {{ credential.token }}"
+        Notion-Version: "2022-06-28"
+    properties:
+      - name: "credential_id"
+        label: "Credential ID"
+        type: "text"
+        required: true
+      - name: "block_id"
+        label: "Block ID"
+        type: "text"
+        required: true
+
+  - name: "Append Block Children"
+    type: "action"
+    implementation:
+      type: "http"
+      method: "PATCH"
+      url: "https://api.notion.com/v1/blocks/{{ input.block_id }}/children"
+      headers:
+        Authorization: "Bearer {{ credential.token }}"
+        Notion-Version: "2022-06-28"
+        Content-Type: "application/json"
+      body:
+        children: "{{ input.children }}"
+    properties:
+      - name: "credential_id"
+        label: "Credential ID"
+        type: "text"
+        required: true
+      - name: "block_id"
+        label: "Block ID"
+        type: "text"
+        required: true
+      - name: "children"
+        label: "Children (JSON)"
+        type: "json"
+        required: true
+
+  - name: "Query Database"
+    type: "action"
+    implementation:
+      type: "http"
+      method: "POST"
+      url: "https://api.notion.com/v1/databases/{{ input.database_id }}/query"
+      headers:
+        Authorization: "Bearer {{ credential.token }}"
+        Notion-Version: "2022-06-28"
+        Content-Type: "application/json"
+      body:
+        filter: "{{ input.filter }}"
+        sorts: "{{ input.sorts }}"
+    properties:
+      - name: "credential_id"
+        label: "Credential ID"
+        type: "text"
+        required: true
+      - name: "database_id"
+        label: "Database ID"
+        type: "text"
+        required: true
+      - name: "filter"
+        label: "Filter (JSON)"
+        type: "json"
+        required: false
+      - name: "sorts"
+        label: "Sorts (JSON)"
+        type: "json"
+        required: false
+
+  - name: "Retrieve Database"
+    type: "action"
+    implementation:
+      type: "http"
+      method: "GET"
+      url: "https://api.notion.com/v1/databases/{{ input.database_id }}"
+      headers:
+        Authorization: "Bearer {{ credential.token }}"
+        Notion-Version: "2022-06-28"
+    properties:
+      - name: "credential_id"
+        label: "Credential ID"
+        type: "text"
+        required: true
+      - name: "database_id"
+        label: "Database ID"
+        type: "text"
+        required: true
+
+  - name: "Search"
+    type: "action"
+    implementation:
+      type: "http"
+      method: "POST"
+      url: "https://api.notion.com/v1/search"
+      headers:
+        Authorization: "Bearer {{ credential.token }}"
+        Notion-Version: "2022-06-28"
+        Content-Type: "application/json"
+      body:
+        query: "{{ input.query }}"
+        filter: "{{ input.filter }}"
+        sort: "{{ input.sort }}"
+    properties:
+      - name: "credential_id"
+        label: "Credential ID"
+        type: "text"
+        required: true
+      - name: "query"
+        label: "Search Query"
+        type: "text"
+        required: false
+
+  - name: "List Users"
+    type: "action"
+    implementation:
+      type: "http"
+      method: "GET"
+      url: "https://api.notion.com/v1/users"
+      headers:
+        Authorization: "Bearer {{ credential.token }}"
+        Notion-Version: "2022-06-28"
+    properties:
+      - name: "credential_id"
+        label: "Credential ID"
+        type: "text"
+        required: true
+
+  - name: "Retrieve User"
+    type: "action"
+    implementation:
+      type: "http"
+      method: "GET"
+      url: "https://api.notion.com/v1/users/{{ input.user_id }}"
+      headers:
+        Authorization: "Bearer {{ credential.token }}"
+        Notion-Version: "2022-06-28"
+    properties:
+      - name: "credential_id"
+        label: "Credential ID"
+        type: "text"
+        required: true
+      - name: "user_id"
+        label: "User ID"
+        type: "text"
+        required: true

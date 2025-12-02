@@ -12,3 +12,16 @@ nodes:
       body:
         channel: "{{ input.channel }}"
         text: "{{ input.text }}"
+    properties:
+      - name: "credential_id"
+        label: "Credential ID"
+        type: "text"
+        required: true
+      - name: "channel"
+        label: "Channel"
+        type: "text"
+        required: true
+      - name: "text"
+        label: "Message Text"
+        type: "text"
+        required: true

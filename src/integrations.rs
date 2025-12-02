@@ -1,7 +1,3 @@
-use rust_flow_macros::generate_integration;
+// This file includes the generated integration code from build.rs
+include!(concat!(env!("OUT_DIR"), "/integrations.rs"));
 
-// Generate Slack integration
-generate_integration!("examples/integrations/slack.yaml");
-
-// Generate Notion integration
-generate_integration!("examples/integrations/notion.yaml");

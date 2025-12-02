@@ -21,7 +21,7 @@ pub struct NodeType {
 }
 
 pub fn get_node_registry() -> Vec<NodeType> {
-    vec![
+    let mut nodes = vec![
         // --- Triggers ---
         NodeType {
             id: "manual_trigger".to_string(),
@@ -178,26 +178,6 @@ pub fn get_node_registry() -> Vec<NodeType> {
             ],
         },
 
-        // --- Integrations ---
-        NodeType {
-            id: "notion_create_page".to_string(),
-            label: "Notion: Create Page".to_string(),
-            category: "Integration".to_string(),
-            description: Some("Create a page in Notion".to_string()),
-            properties: vec![
-                // Simplified for now, real integration might need more complex auth handling
-                NodeProperty {
-                    name: "credential_id".to_string(),
-                    label: "Credential ID".to_string(),
-                    property_type: "text".to_string(),
-                    options: None,
-                    default: None,
-                    required: true,
-                },
-            ],
-        },
-
-        // --- AI ---
         // --- AI ---
         NodeType {
             id: "agent".to_string(),
@@ -377,5 +357,12 @@ pub fn get_node_registry() -> Vec<NodeType> {
                 },
             ],
         },
-    ]
+    ];
+
+    // Append generated integration nodes
+    let mut integrations = crate::integrations::get_integration_node_definitions();
+    nodes.append(&mut integrations);
+
+    nodes
 }
+
