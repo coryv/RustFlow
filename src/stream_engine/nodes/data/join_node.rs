@@ -15,7 +15,7 @@ pub enum JoinMode {
 
 pub enum JoinType {
     Index,
-    Key(String, String), // (Left Key, Right Key)
+    Key(Vec<String>, Vec<String>), // (Left Keys, Right Keys)
 }
 
 pub struct JoinNode {
@@ -26,6 +26,27 @@ pub struct JoinNode {
 impl JoinNode {
     pub fn new(join_type: JoinType, mode: JoinMode) -> Self {
         Self { join_type, mode }
+    }
+
+    fn extract_composite_key(value: &Value, keys: &[String]) -> Option<String> {
+        let mut parts = Vec::new();
+        for key in keys {
+            let val_str = value.get(key).and_then(|v| {
+                match v {
+                    Value::String(s) => Some(s.clone()),
+                    Value::Number(n) => Some(n.to_string()),
+                    Value::Bool(b) => Some(b.to_string()),
+                    _ => None,
+                }
+            });
+            
+            if let Some(s) = val_str {
+                parts.push(s);
+            } else {
+                return None; // All keys must be present
+            }
+        }
+        Some(parts.join("\0")) // Use null char as separator
     }
 }
 
@@ -70,44 +91,16 @@ impl StreamNode for JoinNode {
                         });
                         output.send(merged).await?;
                     } else {
-                        // If we are in Inner mode and one is missing, we stop? 
-                        // Actually for Index join, usually it stops when shortest stream ends for Inner.
-                        // For Outer, it continues until longest ends.
-                        // The above logic consumes one from each.
-                        // If one stream ends early, recv() returns None forever.
-                        // So the logic holds:
-                        // Inner: stops as soon as one is None (because l_opt && r_opt will be false).
-                        // Left: continues as long as Left has value. Right will be Null if exhausted.
-                        // Right: continues as long as Right has value. Left will be Null if exhausted.
-                        // Outer: continues until both are exhausted.
-                        
-                        // Optimization: Break early for Inner if one is done?
                         if self.mode == JoinMode::Inner && (l_opt.is_none() || r_opt.is_none()) {
                             break;
                         }
                     }
                 }
             }
-            JoinType::Key(left_key, right_key) => {
-                let mut left_buffer: HashMap<String, Value> = HashMap::new();
-                let mut right_buffer: HashMap<String, Value> = HashMap::new();
-                
-                // Track which keys have been matched to handle Left/Right/Outer logic correctly?
-                // Actually, for Hash Join:
-                // - Inner: emit on match.
-                // - Left: emit on match. If no match by end, emit lefts that didn't match? 
-                //   Stream join is tricky. Usually we buffer one side or both.
-                //   If we assume infinite streams, we can't do full outer/left without windowing.
-                //   Here we assume finite streams (batch-like) as per previous implementation.
-                
-                // We need to track if a buffered item was ever matched?
-                // Or do we just emit immediately on match?
-                // If we emit on match, we are doing an Inner join on the intersection.
-                
-                // For Left Join:
-                // We need to know if a Left item *never* found a Right match.
-                // We can only know this when the Right stream closes (or we have a window).
-                // Since we are buffering everything, we can track "matched" status.
+            JoinType::Key(left_keys, right_keys) => {
+                // Use Vec<Value> to support 1:N and M:N joins
+                let mut left_buffer: HashMap<String, Vec<Value>> = HashMap::new();
+                let mut right_buffer: HashMap<String, Vec<Value>> = HashMap::new();
                 
                 let mut left_matched: HashMap<String, bool> = HashMap::new();
                 let mut right_matched: HashMap<String, bool> = HashMap::new();
@@ -125,23 +118,20 @@ impl StreamNode for JoinNode {
                         l_opt = left.recv(), if !left_closed => {
                             match l_opt {
                                 Some(l) => {
-                                    if let Some(k_val) = l.get(left_key).and_then(|v| v.as_str()) {
-                                        let k_string = k_val.to_string();
-                                        left_buffer.insert(k_string.clone(), l.clone());
-                                        left_matched.insert(k_string.clone(), false);
+                                    if let Some(k_string) = Self::extract_composite_key(&l, left_keys) {
+                                        // Add to buffer
+                                        left_buffer.entry(k_string.clone()).or_default().push(l.clone());
+                                        
+                                        // Initialize matched status if new key
+                                        left_matched.entry(k_string.clone()).or_insert(false);
 
                                         // Check against all existing right buffer items
-                                        // Note: This logic assumes 1:1 or 1:N? 
-                                        // Standard hash join checks existence.
-                                        // If there are multiple right items with same key, we should emit multiple?
-                                        // The current buffer is HashMap<String, Value>, so it only stores LAST value for a key.
-                                        // This is a limitation of the current implementation. 
-                                        // To support proper join, buffer should be HashMap<String, Vec<Value>>.
-                                        // For now, I will stick to the existing limitation but add the mode logic.
-                                        
-                                        if let Some(r) = right_buffer.get(&k_string) {
-                                            let merged = json!({ "left": l, "right": r });
-                                            output.send(merged).await?;
+                                        if let Some(r_items) = right_buffer.get(&k_string) {
+                                            for r in r_items {
+                                                let merged = json!({ "left": l, "right": r });
+                                                output.send(merged).await?;
+                                            }
+                                            // Mark as matched
                                             left_matched.insert(k_string.clone(), true);
                                             right_matched.insert(k_string.clone(), true);
                                         }
@@ -153,14 +143,20 @@ impl StreamNode for JoinNode {
                         r_opt = right.recv(), if !right_closed => {
                             match r_opt {
                                 Some(r) => {
-                                    if let Some(k_val) = r.get(right_key).and_then(|v| v.as_str()) {
-                                        let k_string = k_val.to_string();
-                                        right_buffer.insert(k_string.clone(), r.clone());
-                                        right_matched.insert(k_string.clone(), false);
+                                    if let Some(k_string) = Self::extract_composite_key(&r, right_keys) {
+                                        // Add to buffer
+                                        right_buffer.entry(k_string.clone()).or_default().push(r.clone());
+                                        
+                                        // Initialize matched status if new key
+                                        right_matched.entry(k_string.clone()).or_insert(false);
 
-                                        if let Some(l) = left_buffer.get(&k_string) {
-                                            let merged = json!({ "left": l, "right": r });
-                                            output.send(merged).await?;
+                                        // Check against all existing left buffer items
+                                        if let Some(l_items) = left_buffer.get(&k_string) {
+                                            for l in l_items {
+                                                let merged = json!({ "left": l, "right": r });
+                                                output.send(merged).await?;
+                                            }
+                                            // Mark as matched
                                             right_matched.insert(k_string.clone(), true);
                                             left_matched.insert(k_string.clone(), true);
                                         }
@@ -174,19 +170,25 @@ impl StreamNode for JoinNode {
 
                 // Post-processing for non-Inner joins
                 if self.mode == JoinMode::Left || self.mode == JoinMode::Outer {
-                    for (k, l) in &left_buffer {
+                    for (k, l_items) in &left_buffer {
                         if !left_matched.get(k).copied().unwrap_or(false) {
-                            let merged = json!({ "left": l, "right": Value::Null });
-                            output.send(merged).await?;
+                            // Emit each unmatched left item
+                            for l in l_items {
+                                let merged = json!({ "left": l, "right": Value::Null });
+                                output.send(merged).await?;
+                            }
                         }
                     }
                 }
 
                 if self.mode == JoinMode::Right || self.mode == JoinMode::Outer {
-                    for (k, r) in &right_buffer {
+                    for (k, r_items) in &right_buffer {
                         if !right_matched.get(k).copied().unwrap_or(false) {
-                            let merged = json!({ "left": Value::Null, "right": r });
-                            output.send(merged).await?;
+                            // Emit each unmatched right item
+                            for r in r_items {
+                                let merged = json!({ "left": Value::Null, "right": r });
+                                output.send(merged).await?;
+                            }
                         }
                     }
                 }
@@ -196,3 +198,7 @@ impl StreamNode for JoinNode {
         Ok(())
     }
 }
+
+
+
+

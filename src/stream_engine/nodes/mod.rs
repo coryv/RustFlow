@@ -10,7 +10,6 @@ pub mod delay_node;
 pub use triggers::manual_trigger::ManualTrigger;
 pub use triggers::time_trigger::TimeTrigger;
 pub use triggers::webhook_trigger::WebhookTrigger;
-pub use data::file_source::FileSource;
 
 pub use actions::http_request_node::HttpRequestNode;
 pub use actions::console_output::ConsoleOutput;
@@ -22,7 +21,9 @@ pub use logic::router_node::RouterNode;
 
 pub use data::join_node::{JoinNode, JoinType, JoinMode};
 pub use data::union_node::{UnionNode, UnionMode};
+pub use data::file_source::FileSource;
 pub use data::html_extract_node::{HtmlExtractNode, ExtractMode};
+pub use data::dedupe_node::DedupeNode;
 
 pub use ai::agent_node::AgentNode;
 

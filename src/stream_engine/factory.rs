@@ -77,9 +77,14 @@ impl NodeFactory {
 
             let join_type = match join_type_str {
                 "key" => {
-                    let key = config.get("key").and_then(|v| v.as_str()).unwrap_or("id");
-                    let right_key = config.get("right_key").and_then(|v| v.as_str()).unwrap_or(key);
-                    nodes::JoinType::Key(key.to_string(), right_key.to_string())
+                    let key_str = config.get("key").and_then(|v| v.as_str()).unwrap_or("id");
+                    let right_key_str = config.get("right_key").and_then(|v| v.as_str()).unwrap_or(key_str);
+                    
+                    // Split by comma and trim to support composite keys
+                    let left_keys: Vec<String> = key_str.split(',').map(|s| s.trim().to_string()).collect();
+                    let right_keys: Vec<String> = right_key_str.split(',').map(|s| s.trim().to_string()).collect();
+                    
+                    nodes::JoinType::Key(left_keys, right_keys)
                 },
                 _ => nodes::JoinType::Index,
             };
@@ -154,6 +159,11 @@ impl NodeFactory {
                 _ => nodes::ExtractMode::Text,
             };
             Ok(Box::new(nodes::HtmlExtractNode::new(selector, mode)))
+        });
+
+        self.register("dedupe", |config, _| {
+            let key = config.get("key").and_then(|v| v.as_str()).map(|s| s.to_string());
+            Ok(Box::new(nodes::DedupeNode::new(key)))
         });
 
         self.register("agent", |config, secrets| {

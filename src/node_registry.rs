@@ -325,7 +325,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                 },
                 NodeProperty {
                     name: "key".to_string(),
-                    label: "Join Key".to_string(),
+                    label: "Join Key (comma-separated)".to_string(),
                     property_type: "text".to_string(),
                     options: None,
                     default: Some("id".to_string()),
@@ -333,7 +333,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                 },
                 NodeProperty {
                     name: "right_key".to_string(),
-                    label: "Right Key (Optional)".to_string(),
+                    label: "Right Key (comma-separated)".to_string(),
                     property_type: "text".to_string(),
                     options: None,
                     default: None,
@@ -370,6 +370,22 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: None,
                     required: true,
+                },
+            ],
+        },
+        NodeType {
+            id: "dedupe".to_string(),
+            label: "Dedupe".to_string(),
+            category: "Data Processing".to_string(),
+            description: Some("Filter duplicate records".to_string()),
+            properties: vec![
+                NodeProperty {
+                    name: "key".to_string(),
+                    label: "Key to check (Optional)".to_string(),
+                    property_type: "text".to_string(),
+                    options: None,
+                    default: None,
+                    required: false,
                 },
             ],
         },
