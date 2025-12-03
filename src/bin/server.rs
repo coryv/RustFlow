@@ -57,9 +57,13 @@ async fn main() {
         .route("/api/node-types", get(get_node_types))
         .route("/health", get(|| async { "OK" }))
         .layer(cors)
-        .with_state(state);
+        .with_state(state)
+        .fallback_service(
+            tower_http::services::ServeDir::new("dist")
+                .not_found_service(tower_http::services::ServeFile::new("dist/index.html")),
+        );
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     tracing::info!("Server listening on {}", addr);
     
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
