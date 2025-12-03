@@ -9,6 +9,7 @@ pub struct NodeProperty {
     pub options: Option<Vec<String>>, // For select
     pub default: Option<String>,
     pub required: bool,
+    pub json_schema: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -17,6 +18,7 @@ pub struct NodeType {
     pub label: String,
     pub category: String, // Trigger, Action, Logic, Integration
     pub description: Option<String>,
+    pub documentation: Option<String>,
     pub properties: Vec<NodeProperty>,
 }
 
@@ -28,6 +30,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
             label: "Manual Trigger".to_string(),
             category: "Trigger".to_string(),
             description: Some("Manually start the workflow".to_string()),
+            documentation: None,
             properties: vec![],
         },
         NodeType {
@@ -35,6 +38,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
             label: "Time Trigger".to_string(),
             category: "Trigger".to_string(),
             description: Some("Run workflow on a schedule".to_string()),
+            documentation: None,
             properties: vec![
                 NodeProperty {
                     name: "cron".to_string(),
@@ -43,6 +47,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: Some("* * * * *".to_string()),
                     required: true,
+                    json_schema: None,
                 },
             ],
         },
@@ -51,6 +56,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
             label: "Webhook".to_string(),
             category: "Trigger".to_string(),
             description: Some("Start workflow via HTTP request".to_string()),
+            documentation: None,
             properties: vec![
                 NodeProperty {
                     name: "path".to_string(),
@@ -59,6 +65,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: Some("/".to_string()),
                     required: true,
+                    json_schema: None,
                 },
                 NodeProperty {
                     name: "method".to_string(),
@@ -67,6 +74,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: Some(vec!["GET".to_string(), "POST".to_string(), "PUT".to_string(), "DELETE".to_string()]),
                     default: Some("POST".to_string()),
                     required: true,
+                    json_schema: None,
                 },
             ],
         },
@@ -77,6 +85,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
             label: "HTTP Request".to_string(),
             category: "Action".to_string(),
             description: Some("Make an HTTP request".to_string()),
+            documentation: None,
             properties: vec![
                 NodeProperty {
                     name: "method".to_string(),
@@ -85,6 +94,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: Some(vec!["GET".to_string(), "POST".to_string(), "PUT".to_string(), "DELETE".to_string()]),
                     default: Some("GET".to_string()),
                     required: true,
+                    json_schema: None,
                 },
                 NodeProperty {
                     name: "url".to_string(),
@@ -93,6 +103,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: None,
                     required: true,
+                    json_schema: None,
                 },
                 NodeProperty {
                     name: "headers".to_string(),
@@ -101,6 +112,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: Some("{}".to_string()),
                     required: false,
+                    json_schema: None,
                 },
                 NodeProperty {
                     name: "body".to_string(),
@@ -109,6 +121,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: None,
                     required: false,
+                    json_schema: None,
                 },
             ],
         },
@@ -117,6 +130,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
             label: "Set Data".to_string(),
             category: "Action".to_string(),
             description: Some("Set workflow data".to_string()),
+            documentation: None,
             properties: vec![
                 NodeProperty {
                     name: "json".to_string(), // Mapped to 'data' in UI logic or handled specially
@@ -125,6 +139,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: Some("{}".to_string()),
                     required: true,
+                    json_schema: None,
                 },
             ],
         },
@@ -133,6 +148,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
             label: "Code".to_string(),
             category: "Action".to_string(),
             description: Some("Run JavaScript code".to_string()),
+            documentation: None,
             properties: vec![
                 NodeProperty {
                     name: "code".to_string(),
@@ -141,6 +157,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: Some("return {};".to_string()),
                     required: true,
+                    json_schema: None,
                 },
             ],
         },
@@ -149,6 +166,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
             label: "Console Log".to_string(),
             category: "Action".to_string(),
             description: Some("Log data to console".to_string()),
+            documentation: None,
             properties: vec![],
         },
         NodeType {
@@ -156,6 +174,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
             label: "Delay".to_string(),
             category: "Action".to_string(),
             description: Some("Pause execution for a duration".to_string()),
+            documentation: None,
             properties: vec![
                 NodeProperty {
                     name: "duration_ms".to_string(),
@@ -164,6 +183,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: Some("1000".to_string()),
                     required: true,
+                    json_schema: None,
                 },
             ],
         },
@@ -174,6 +194,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
             label: "Router".to_string(),
             category: "Logic".to_string(),
             description: Some("Route based on condition".to_string()),
+            documentation: None,
             properties: vec![
                 NodeProperty {
                     name: "key".to_string(),
@@ -182,6 +203,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: Some("id".to_string()),
                     required: true,
+                    json_schema: None,
                 },
                 NodeProperty {
                     name: "value".to_string(),
@@ -190,6 +212,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: None,
                     required: true,
+                    json_schema: None,
                 },
             ],
         },
@@ -200,6 +223,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
             label: "AI Agent".to_string(),
             category: "AI".to_string(),
             description: Some("LLM Agent".to_string()),
+            documentation: None,
             properties: vec![
                 NodeProperty {
                     name: "system_prompt".to_string(),
@@ -208,6 +232,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: Some("You are a helpful assistant.".to_string()),
                     required: true,
+                    json_schema: None,
                 },
                 NodeProperty {
                     name: "user_prompt".to_string(),
@@ -216,6 +241,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: None,
                     required: false,
+                    json_schema: None,
                 },
                 NodeProperty {
                     name: "json_schema".to_string(),
@@ -224,6 +250,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: None,
                     required: false,
+                    json_schema: None,
                 },
             ],
         },
@@ -232,6 +259,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
             label: "OpenAI Model".to_string(),
             category: "Models".to_string(),
             description: Some("GPT-4 / GPT-3.5".to_string()),
+            documentation: None,
             properties: vec![
                 NodeProperty {
                     name: "model".to_string(),
@@ -240,6 +268,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: Some("gpt-4o".to_string()),
                     required: true,
+                    json_schema: None,
                 },
                 NodeProperty {
                     name: "api_key".to_string(),
@@ -248,6 +277,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: None,
                     required: true,
+                    json_schema: None,
                 },
             ],
         },
@@ -256,6 +286,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
             label: "Gemini Model".to_string(),
             category: "Models".to_string(),
             description: Some("Gemini Pro / Flash".to_string()),
+            documentation: None,
             properties: vec![
                 NodeProperty {
                     name: "model".to_string(),
@@ -264,6 +295,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: Some("gemini-1.5-flash".to_string()),
                     required: true,
+                    json_schema: None,
                 },
                 NodeProperty {
                     name: "api_key".to_string(),
@@ -272,6 +304,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: None,
                     required: true,
+                    json_schema: None,
                 },
             ],
         },
@@ -282,6 +315,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
             label: "HTML Extract".to_string(),
             category: "Data Processing".to_string(),
             description: Some("Extract data from HTML".to_string()),
+            documentation: None,
             properties: vec![
                 NodeProperty {
                     name: "selector".to_string(),
@@ -290,6 +324,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: Some("body".to_string()),
                     required: true,
+                    json_schema: None,
                 },
                 NodeProperty {
                     name: "mode".to_string(),
@@ -298,6 +333,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: Some(vec!["text".to_string(), "html".to_string(), "attribute".to_string()]),
                     default: Some("text".to_string()),
                     required: true,
+                    json_schema: None,
                 },
                 NodeProperty {
                     name: "attribute".to_string(),
@@ -306,6 +342,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: None,
                     required: false,
+                    json_schema: None,
                 },
             ],
         },
@@ -314,6 +351,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
             label: "Join".to_string(),
             category: "Data Processing".to_string(),
             description: Some("Join two streams".to_string()),
+            documentation: None,
             properties: vec![
                 NodeProperty {
                     name: "type".to_string(),
@@ -322,6 +360,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: Some(vec!["index".to_string(), "key".to_string()]),
                     default: Some("index".to_string()),
                     required: true,
+                    json_schema: None,
                 },
                 NodeProperty {
                     name: "key".to_string(),
@@ -330,6 +369,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: Some("id".to_string()),
                     required: false,
+                    json_schema: None,
                 },
                 NodeProperty {
                     name: "right_key".to_string(),
@@ -338,6 +378,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: None,
                     required: false,
+                    json_schema: None,
                 },
             ],
         },
@@ -346,6 +387,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
             label: "Union".to_string(),
             category: "Data Processing".to_string(),
             description: Some("Merge multiple streams".to_string()),
+            documentation: None,
             properties: vec![
                 NodeProperty {
                     name: "mode".to_string(),
@@ -354,6 +396,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: Some(vec!["interleaved".to_string(), "sequential".to_string()]),
                     default: Some("interleaved".to_string()),
                     required: true,
+                    json_schema: None,
                 },
             ],
         },
@@ -362,6 +405,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
             label: "File Source".to_string(),
             category: "Data Processing".to_string(),
             description: Some("Read from file".to_string()),
+            documentation: None,
             properties: vec![
                 NodeProperty {
                     name: "path".to_string(),
@@ -370,6 +414,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: None,
                     required: true,
+                    json_schema: None,
                 },
             ],
         },
@@ -378,6 +423,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
             label: "Dedupe".to_string(),
             category: "Data Processing".to_string(),
             description: Some("Filter duplicate records".to_string()),
+            documentation: None,
             properties: vec![
                 NodeProperty {
                     name: "key".to_string(),
@@ -386,6 +432,111 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     options: None,
                     default: None,
                     required: false,
+                    json_schema: None,
+                },
+            ],
+        },
+        NodeType {
+            id: "group_by".to_string(),
+            label: "Group By".to_string(),
+            category: "Data Processing".to_string(),
+            description: Some("Group and aggregate data".to_string()),
+            documentation: Some(r#"
+Groups data by specified keys and performs aggregations on other columns.
+
+### Properties
+
+- **group_by**: Comma-separated list of keys to group by (e.g., `category,region`).
+- **aggregations**: JSON array of aggregation objects.
+
+### Aggregation Object
+
+```json
+{
+  "column": "value",
+  "function": "sum", // sum, count, avg, min, max, median, variance, stddev
+  "alias": "total_value" // Optional output key name
+}
+```
+"#.to_string()),
+            properties: vec![
+                NodeProperty {
+                    name: "group_by".to_string(),
+                    label: "Group By Keys (comma-separated)".to_string(),
+                    property_type: "text".to_string(),
+                    options: None,
+                    default: None,
+                    required: true,
+                    json_schema: None,
+                },
+                NodeProperty {
+                    name: "aggregations".to_string(),
+                    label: "Aggregations (JSON)".to_string(),
+                    property_type: "json".to_string(),
+                    options: None,
+                    default: Some("[]".to_string()),
+                    required: true,
+                    json_schema: Some(serde_json::json!({
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "column": { "type": "string", "title": "Column" },
+                                "function": { 
+                                    "type": "string", 
+                                    "title": "Function",
+                                    "enum": ["sum", "count", "avg", "min", "max", "median", "variance", "stddev"] 
+                                },
+                                "alias": { "type": "string", "title": "Alias (Optional)" }
+                            },
+                            "required": ["column", "function"]
+                        }
+                    })),
+                },
+            ],
+        },
+        NodeType {
+            id: "stats".to_string(),
+            label: "Statistics".to_string(),
+            category: "Data Processing".to_string(),
+            description: Some("Calculate global statistics".to_string()),
+            documentation: Some(r#"
+Calculates global statistics for the entire dataset.
+
+### Properties
+
+- **columns**: Comma-separated list of columns to analyze (e.g., `score,age`).
+- **operations**: Comma-separated list of operations to perform.
+
+### Supported Operations
+
+- `mean` (or `avg`)
+- `median`
+- `variance`
+- `stddev`
+- `min`
+- `max`
+- `sum`
+- `count`
+"#.to_string()),
+            properties: vec![
+                NodeProperty {
+                    name: "columns".to_string(),
+                    label: "Columns (comma-separated)".to_string(),
+                    property_type: "text".to_string(),
+                    options: None,
+                    default: None,
+                    required: true,
+                    json_schema: None,
+                },
+                NodeProperty {
+                    name: "operations".to_string(),
+                    label: "Operations (comma-separated)".to_string(),
+                    property_type: "text".to_string(),
+                    options: None,
+                    default: Some("mean,max,min,count".to_string()),
+                    required: true,
+                    json_schema: None,
                 },
             ],
         },

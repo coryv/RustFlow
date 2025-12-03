@@ -24,6 +24,8 @@ pub use data::union_node::{UnionNode, UnionMode};
 pub use data::file_source::FileSource;
 pub use data::html_extract_node::{HtmlExtractNode, ExtractMode};
 pub use data::dedupe_node::DedupeNode;
+pub use data::group_by_node::{GroupByNode, Aggregation};
+pub use data::stats_node::StatsNode;
 
 pub use ai::agent_node::AgentNode;
 

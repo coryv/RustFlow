@@ -1,7 +1,20 @@
 name: "Slack"
+credentials:
+  - name: "token"
+    label: "Bot User OAuth Token"
+    type: "password"
+    required: true
+    description: "Your Slack Bot User OAuth Token (starts with xoxb-)"
 nodes:
   - name: "Post Message"
     type: "action"
+    documentation: |
+      Posts a message to a Slack channel.
+
+      ### Properties
+      - **credential_id**: The ID of the Slack credential to use.
+      - **channel**: The channel ID or name to post to.
+      - **text**: The message text to post.
     implementation:
       type: "http"
       method: "POST"

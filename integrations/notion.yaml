@@ -1,7 +1,69 @@
 name: "Notion"
+credentials:
+  - name: "token"
+    label: "Integration Token"
+    type: "password"
+    required: true
+    description: "Your Notion Integration Token (start with secret_)"
 nodes:
+  - name: "Page Created"
+    type: "trigger"
+    documentation: |
+      Triggers when a new page is created in the workspace.
+      Polls the Notion Search API every 60 seconds.
+    implementation:
+      type: "polling"
+      interval: "60s"
+      items_path: "results"
+      dedupe_key: "id"
+      request:
+        method: "POST"
+        url: "https://api.notion.com/v1/search"
+        headers:
+          Authorization: "Bearer {{ token }}"
+          Notion-Version: "2022-06-28"
+          Content-Type: "application/json"
+        body:
+          filter:
+            value: "page"
+            property: "object"
+          sort:
+            direction: "descending"
+            timestamp: "last_edited_time"
+    properties: []
+
+  - name: "New Comment"
+    type: "trigger"
+    documentation: |
+      Triggers when a new comment is added.
+      Polls the Notion Comments API every 60 seconds.
+    implementation:
+      type: "polling"
+      interval: "60s"
+      items_path: "results"
+      dedupe_key: "id"
+      request:
+        method: "GET"
+        url: "https://api.notion.com/v1/comments?block_id={{ block_id }}"
+        headers:
+          Authorization: "Bearer {{ token }}"
+          Notion-Version: "2022-06-28"
+    properties:
+      - name: "block_id"
+        label: "Block/Page ID"
+        type: "text"
+        required: true
+
   - name: "Create Page"
     type: "action"
+    documentation: |
+      Creates a new page in a Notion database.
+
+      ### Properties
+      - **credential_id**: The ID of the Notion credential to use.
+      - **database_id**: The ID of the database to create the page in.
+      - **title**: The title of the new page.
+      - **summary**: A summary of the page content.
     implementation:
       type: "http"
       method: "POST"
@@ -39,6 +101,12 @@ nodes:
 
   - name: "Retrieve Page"
     type: "action"
+    documentation: |
+      Retrieves a page from Notion.
+
+      ### Properties
+      - **credential_id**: The ID of the Notion credential to use.
+      - **page_id**: The ID of the page to retrieve.
     implementation:
       type: "http"
       method: "GET"
@@ -58,6 +126,14 @@ nodes:
 
   - name: "Update Page"
     type: "action"
+    documentation: |
+      Updates a page in Notion.
+
+      ### Properties
+      - **credential_id**: The ID of the Notion credential to use.
+      - **page_id**: The ID of the page to update.
+      - **properties**: JSON object of properties to update.
+      - **archived**: Boolean indicating whether to archive the page.
     implementation:
       type: "http"
       method: "PATCH"
@@ -89,6 +165,12 @@ nodes:
 
   - name: "Retrieve Block Children"
     type: "action"
+    documentation: |
+      Retrieves the children of a block.
+
+      ### Properties
+      - **credential_id**: The ID of the Notion credential to use.
+      - **block_id**: The ID of the block to retrieve children for.
     implementation:
       type: "http"
       method: "GET"
@@ -108,6 +190,13 @@ nodes:
 
   - name: "Append Block Children"
     type: "action"
+    documentation: |
+      Appends children to a block.
+
+      ### Properties
+      - **credential_id**: The ID of the Notion credential to use.
+      - **block_id**: The ID of the block to append children to.
+      - **children**: JSON array of block objects to append.
     implementation:
       type: "http"
       method: "PATCH"
@@ -134,6 +223,14 @@ nodes:
 
   - name: "Query Database"
     type: "action"
+    documentation: |
+      Queries a database.
+
+      ### Properties
+      - **credential_id**: The ID of the Notion credential to use.
+      - **database_id**: The ID of the database to query.
+      - **filter**: JSON object for filtering results.
+      - **sorts**: JSON array for sorting results.
     implementation:
       type: "http"
       method: "POST"
@@ -165,6 +262,12 @@ nodes:
 
   - name: "Retrieve Database"
     type: "action"
+    documentation: |
+      Retrieves a database.
+
+      ### Properties
+      - **credential_id**: The ID of the Notion credential to use.
+      - **database_id**: The ID of the database to retrieve.
     implementation:
       type: "http"
       method: "GET"
@@ -184,6 +287,12 @@ nodes:
 
   - name: "Search"
     type: "action"
+    documentation: |
+      Searches for pages or databases.
+
+      ### Properties
+      - **credential_id**: The ID of the Notion credential to use.
+      - **query**: The search query string.
     implementation:
       type: "http"
       method: "POST"
@@ -208,6 +317,11 @@ nodes:
 
   - name: "List Users"
     type: "action"
+    documentation: |
+      Lists all users.
+
+      ### Properties
+      - **credential_id**: The ID of the Notion credential to use.
     implementation:
       type: "http"
       method: "GET"
@@ -223,6 +337,12 @@ nodes:
 
   - name: "Retrieve User"
     type: "action"
+    documentation: |
+      Retrieves a user.
+
+      ### Properties
+      - **credential_id**: The ID of the Notion credential to use.
+      - **user_id**: The ID of the user to retrieve.
     implementation:
       type: "http"
       method: "GET"

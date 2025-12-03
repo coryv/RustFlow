@@ -10,7 +10,20 @@ use serde_json::Value;
 #[derive(Deserialize, Debug)]
 struct Integration {
     name: String,
+    #[serde(default)]
+    credentials: Vec<CredentialProperty>,
     nodes: Vec<IntegrationNode>,
+}
+
+#[derive(Deserialize, Debug)]
+struct CredentialProperty {
+    name: String,
+    label: String,
+    #[serde(rename = "type")]
+    property_type: String,
+    #[serde(default)]
+    required: bool,
+    description: Option<String>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -18,6 +31,7 @@ struct IntegrationNode {
     name: String,
     #[serde(rename = "type")]
     node_type: String,
+    documentation: Option<String>,
     implementation: Implementation,
     #[serde(default)]
     properties: Vec<NodeProperty>,
@@ -41,6 +55,7 @@ struct NodeProperty {
 #[serde(tag = "type", rename_all = "lowercase")]
 enum Implementation {
     Http(HttpImplementation),
+    Polling(PollingImplementation),
 }
 
 #[derive(Deserialize, Debug)]
@@ -49,6 +64,14 @@ struct HttpImplementation {
     url: String,
     headers: Option<HashMap<String, String>>,
     body: Option<Value>,
+}
+
+#[derive(Deserialize, Debug)]
+struct PollingImplementation {
+    interval: String, // e.g. "60s"
+    request: HttpImplementation,
+    items_path: Option<String>, // JSON path to array of items, e.g. "results"
+    dedupe_key: Option<String>, // Key to use for deduplication, e.g. "id"
 }
 
 fn main() -> anyhow::Result<()> {
@@ -66,6 +89,7 @@ fn main() -> anyhow::Result<()> {
     let mut integration_modules = Vec::new();
     let mut match_arms = Vec::new();
     let mut node_definitions = Vec::new();
+    let mut integration_definitions = Vec::new();
 
     for entry in fs::read_dir(integrations_dir)? {
         let entry = entry?;
@@ -135,7 +159,7 @@ fn main() -> anyhow::Result<()> {
                                     mut inputs: Vec<tokio::sync::mpsc::Receiver<serde_json::Value>>,
                                     outputs: Vec<tokio::sync::mpsc::Sender<serde_json::Value>>,
                                 ) -> anyhow::Result<()> {
-                                    let mut env = minijinja::Environment::new();
+                                    let env = minijinja::Environment::new();
 
                                     if let Some(rx) = inputs.get_mut(0) {
                                         if let Some(tx) = outputs.get(0) {
@@ -194,6 +218,155 @@ fn main() -> anyhow::Result<()> {
                             }
                         });
                     }
+                    Implementation::Polling(polling) => {
+                        let interval_str = &polling.interval;
+                        let interval_ms: u64 = if interval_str.ends_with('s') {
+                            interval_str.trim_end_matches('s').parse::<u64>().unwrap_or(60) * 1000
+                        } else if interval_str.ends_with("ms") {
+                            interval_str.trim_end_matches("ms").parse::<u64>().unwrap_or(60000)
+                        } else {
+                            60000
+                        };
+
+                        let http = &polling.request;
+                        let method = &http.method;
+                        let url = &http.url;
+                        let headers = http.headers.clone().unwrap_or_default();
+                        let items_path = polling.items_path.clone();
+                        let dedupe_key = polling.dedupe_key.clone();
+
+                        let body_template = match &http.body {
+                            Some(Value::String(s)) => Some(s.clone()),
+                            Some(v) => Some(serde_json::to_string(v)?),
+                            None => None,
+                        };
+
+                        let headers_iter = headers.iter().map(|(k, v)| {
+                            quote! {
+                                headers.insert(#k.to_string(), #v.to_string());
+                            }
+                        });
+
+                        let body_logic = if let Some(body) = body_template {
+                            quote! {
+                                let body_template = #body;
+                                let data = serde_json::Value::Null; 
+                                let body_rendered = env.render_str(body_template, &data)
+                                    .map_err(|e| anyhow::anyhow!("Failed to render body template: {}", e))?;
+                                let body_json: serde_json::Value = serde_json::from_str(&body_rendered)
+                                    .map_err(|e| anyhow::anyhow!("Failed to parse rendered body as JSON: {}", e))?;
+                                req_builder = req_builder.json(&body_json);
+                            }
+                        } else {
+                            quote! {}
+                        };
+
+                        let items_extraction = if let Some(path) = items_path {
+                            quote! {
+                                let items: Vec<serde_json::Value> = body_json.get(#path).and_then(|v| v.as_array()).cloned().unwrap_or_default();
+                            }
+                        } else {
+                            quote! {
+                                let items: Vec<serde_json::Value> = if body_json.is_array() {
+                                    body_json.as_array().unwrap().clone()
+                                } else {
+                                    vec![body_json]
+                                };
+                            }
+                        };
+
+                        let dedupe_logic = if let Some(key) = dedupe_key {
+                            quote! {
+                                let item_id: Option<String> = item.get(#key).and_then(|v| v.as_str()).map(|s| s.to_string());
+                                if let Some(id) = item_id {
+                                    if seen_ids.contains(&id) {
+                                        continue;
+                                    }
+                                    seen_ids.insert(id);
+                                }
+                            }
+                        } else {
+                            quote! {}
+                        };
+
+                        node_structs.push(quote! {
+                            pub struct #struct_name {
+                                client: reqwest::Client,
+                            }
+
+                            impl #struct_name {
+                                pub fn new() -> Self {
+                                    Self {
+                                        client: reqwest::Client::new(),
+                                    }
+                                }
+                            }
+
+                            #[async_trait::async_trait]
+                            impl crate::stream_engine::StreamNode for #struct_name {
+                                async fn run(
+                                    &self,
+                                    mut inputs: Vec<tokio::sync::mpsc::Receiver<serde_json::Value>>,
+                                    outputs: Vec<tokio::sync::mpsc::Sender<serde_json::Value>>,
+                                ) -> anyhow::Result<()> {
+                                    let mut seen_ids: std::collections::HashSet<String> = std::collections::HashSet::new();
+                                    let env: minijinja::Environment = minijinja::Environment::new();
+                                    let mut interval = tokio::time::interval(tokio::time::Duration::from_millis(#interval_ms));
+
+                                    if let Some(tx) = outputs.get(0) {
+                                        loop {
+                                            interval.tick().await;
+
+                                            let data: serde_json::Value = serde_json::Value::Null;
+
+                                            let url_template = #url;
+                                            let url = env.render_str(url_template, &data)
+                                                .map_err(|e| anyhow::anyhow!("Failed to render URL template: {}", e))?;
+
+                                            let mut headers: std::collections::HashMap<String, String> = std::collections::HashMap::new();
+                                            #(#headers_iter)*
+                                            
+                                            let mut req_builder: reqwest::RequestBuilder = match #method {
+                                                "GET" => self.client.get(&url),
+                                                "POST" => self.client.post(&url),
+                                                _ => self.client.get(&url),
+                                            };
+
+                                            for (k, v) in headers {
+                                                let v_rendered = env.render_str(&v, &data)
+                                                    .map_err(|e| anyhow::anyhow!("Failed to render header {}: {}", k, e))?;
+                                                req_builder = req_builder.header(k, v_rendered);
+                                            }
+
+                                            #body_logic
+
+                                            match req_builder.send().await {
+                                                Ok(resp) => {
+                                                    let body_bytes = resp.bytes().await.unwrap_or_default();
+                                                    let body_json: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap_or(serde_json::Value::Null);
+
+                                                    #items_extraction
+
+                                                    for item in items {
+                                                        #dedupe_logic
+                                                        
+                                                        if let Err(e) = tx.send(item).await {
+                                                            eprintln!("Failed to send output: {}", e);
+                                                            return Ok(());
+                                                        }
+                                                    }
+                                                }
+                                                Err(e) => {
+                                                    eprintln!("Polling request failed: {}", e);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    Ok(())
+                                }
+                            }
+                        });
+                    }
                 }
 
                 // --- Registry Generation ---
@@ -207,6 +380,10 @@ fn main() -> anyhow::Result<()> {
                 let label = format!("{}: {}", integration_name, node.name);
                 let category = "Integration";
                 let description = format!("{} integration", integration_name);
+                let documentation = match &node.documentation {
+                    Some(doc) => quote! { Some(#doc.to_string()) },
+                    None => quote! { None },
+                };
 
                 let mut properties_code = Vec::new();
                 for prop in node.properties {
@@ -234,6 +411,7 @@ fn main() -> anyhow::Result<()> {
                             options: #options,
                             default: #default,
                             required: #required,
+                            json_schema: None,
                         }
                     });
                 }
@@ -244,6 +422,7 @@ fn main() -> anyhow::Result<()> {
                         label: #label.to_string(),
                         category: #category.to_string(),
                         description: Some(#description.to_string()),
+                        documentation: #documentation,
                         properties: vec![#(#properties_code),*],
                     }
                 });
@@ -253,6 +432,38 @@ fn main() -> anyhow::Result<()> {
                 pub mod #module_name {
                     use super::*;
                     #(#node_structs)*
+                }
+            });
+
+            // --- Integration Definition ---
+            let mut credential_props_code = Vec::new();
+            for cred in integration.credentials {
+                let name = cred.name;
+                let label = cred.label;
+                let property_type = cred.property_type;
+                let required = cred.required;
+                let description = match cred.description {
+                    Some(s) => quote! { Some(#s.to_string()) },
+                    None => quote! { None },
+                };
+
+                credential_props_code.push(quote! {
+                    crate::integration_registry::CredentialProperty {
+                        name: #name.to_string(),
+                        label: #label.to_string(),
+                        property_type: #property_type.to_string(),
+                        required: #required,
+                        description: #description,
+                    }
+                });
+            }
+
+            let integration_description = format!("{} integration", integration_name);
+            integration_definitions.push(quote! {
+                crate::integration_registry::IntegrationDefinition {
+                    name: #integration_name.to_string(),
+                    description: #integration_description.to_string(),
+                    credentials: vec![#(#credential_props_code),*],
                 }
             });
         }
