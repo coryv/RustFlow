@@ -4,18 +4,18 @@ use tokio::sync::mpsc::{Receiver, Sender};
 use serde_json::Value;
 use anyhow::Result;
 
-pub struct SetData {
+pub struct SetDataNode {
     data: Value,
 }
 
-impl SetData {
+impl SetDataNode {
     pub fn new(data: Value) -> Self {
         Self { data }
     }
 }
 
 #[async_trait]
-impl StreamNode for SetData {
+impl StreamNode for SetDataNode {
     async fn run(&self, mut inputs: Vec<Receiver<Value>>, outputs: Vec<Sender<Value>>) -> Result<()> {
         // Wait for input trigger, then send data
         if let Some(rx) = inputs.get_mut(0) {

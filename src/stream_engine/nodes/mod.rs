@@ -10,10 +10,13 @@ pub mod delay_node;
 pub use triggers::manual_trigger::ManualTrigger;
 pub use triggers::time_trigger::TimeTrigger;
 pub use triggers::webhook_trigger::WebhookTrigger;
+pub use triggers::child_workflow_trigger::ChildWorkflowTrigger;
 
 pub use actions::http_request_node::HttpRequestNode;
-pub use actions::console_output::ConsoleOutput;
-pub use actions::set_data::SetData;
+pub use actions::console_output::ConsoleOutputNode;
+pub use actions::set_data::SetDataNode;
+pub use actions::return_node::ReturnNode;
+pub use actions::execute_workflow_node::ExecuteWorkflowNode;
 pub use actions::code_node::CodeNode;
 pub use actions::function_node::FunctionNode;
 

@@ -15,6 +15,7 @@ pub struct StreamExecutor {
     edges: Vec<(String, usize, String, usize)>,
     event_sender: Option<broadcast::Sender<ExecutionEvent>>,
     debug_config: DebugConfig,
+    initial_inputs: HashMap<String, Vec<Value>>,
 }
 
 impl Default for StreamExecutor {
@@ -30,6 +31,7 @@ impl StreamExecutor {
             edges: Vec::new(),
             event_sender: None,
             debug_config,
+            initial_inputs: HashMap::new(),
         }
     }
 
@@ -43,6 +45,11 @@ impl StreamExecutor {
 
     pub fn add_connection(&mut self, from: String, from_port: usize, to: String, to_port: usize) {
         self.edges.push((from, from_port, to, to_port));
+    }
+
+    pub fn inject_input(&mut self, node_id: &str, value: Value) {
+        // We'll store this to be injected during channel initialization
+        self.initial_inputs.entry(node_id.to_string()).or_default().push(value);
     }
 
     pub async fn run(self) -> Result<()> {
@@ -157,6 +164,23 @@ impl StreamExecutor {
                 node_outputs.entry(*from_port).or_default().push(tx);
             } else {
                  return Err(anyhow!("Edge starts from unknown node: {}", from));
+            }
+        }
+
+        // Inject initial inputs
+        for (node_id, values) in &self.initial_inputs {
+            if let Some(node_inputs) = inputs.get_mut(node_id) {
+                // We inject into port 0 by default, or create a new channel if none exists
+                // Actually, we need to simulate an incoming edge.
+                // We can create a channel, spawn a task to send values, and add the receiver.
+                let (tx, rx) = mpsc::channel(100);
+                let values = values.clone();
+                tokio::spawn(async move {
+                    for val in values {
+                        let _ = tx.send(val).await;
+                    }
+                });
+                node_inputs.entry(0).or_default().push(rx);
             }
         }
 

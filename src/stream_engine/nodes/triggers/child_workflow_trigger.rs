@@ -4,10 +4,10 @@ use tokio::sync::mpsc::{Receiver, Sender};
 use serde_json::{json, Value};
 use anyhow::Result;
 
-pub struct ManualTrigger;
+pub struct ChildWorkflowTrigger;
 
 #[async_trait]
-impl StreamNode for ManualTrigger {
+impl StreamNode for ChildWorkflowTrigger {
     async fn run(&self, mut inputs: Vec<Receiver<Value>>, outputs: Vec<Sender<Value>>) -> Result<()> {
         if let Some(tx) = outputs.first() {
             if let Some(rx) = inputs.get_mut(0) {
@@ -18,17 +18,17 @@ impl StreamNode for ManualTrigger {
                     received_any = true;
                 }
                 
-                // If the channel was closed immediately without data, or if we didn't receive anything
-                // but we expected to act as a trigger, we might want to send null?
-                // But for injected data, the channel will have data.
-                // If no input channel was provided (normal manual trigger), inputs is empty.
                 if !received_any {
-                     // This case happens if the input channel was present but empty?
-                     // Or if we just want to ensure at least one execution.
-                     // But if inputs are present, we should respect them.
+                    // If no data was injected, we might want to error or just do nothing?
+                    // For a child workflow, it usually expects input.
+                    // But maybe it can run without input?
+                    // Let's send null if nothing received, similar to ManualTrigger, 
+                    // but maybe log a warning?
                 }
             } else {
-                // No inputs, just trigger once with null
+                // No inputs provided at all.
+                // This happens if the executor didn't inject anything.
+                // We should probably send null to start the flow.
                 tx.send(json!(null)).await?;
             }
         }

@@ -1,0 +1,26 @@
+name: "Child Workflow"
+nodes:
+  - id: "trigger"
+    type: "child_workflow_trigger"
+    config: {}
+
+  - id: "process_input"
+    type: "code"
+    config:
+      lang: "js"
+      code: |
+        // Expecting input: { "value": 10 }
+        output = {
+          "result": input.value * 2
+        };
+
+  - id: "return_result"
+    type: "return"
+    config:
+      value: "{{ result }}"
+
+edges:
+  - from: "trigger"
+    to: "process_input"
+  - from: "process_input"
+    to: "return_result"

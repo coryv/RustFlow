@@ -1,0 +1,22 @@
+name: "Parent Workflow"
+nodes:
+  - id: "trigger"
+    type: "manual_trigger"
+    config: {}
+
+  - id: "call_sub_workflow"
+    type: "execute_workflow"
+    config:
+      workflow_path: "tests/sub_workflow_child.yaml"
+      inputs:
+        value: 10
+
+  - id: "log_result"
+    type: "console_output"
+    config: {}
+
+edges:
+  - from: "trigger"
+    to: "call_sub_workflow"
+  - from: "call_sub_workflow"
+    to: "log_result"

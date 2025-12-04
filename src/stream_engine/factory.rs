@@ -48,8 +48,9 @@ impl NodeFactory {
 
     fn register_defaults(&mut self) {
         self.register("manual_trigger", |_, _| Ok(Box::new(nodes::ManualTrigger)));
-        self.register("console_output", |_, _| Ok(Box::new(nodes::ConsoleOutput)));
-        self.register("set_data", |config, _| Ok(Box::new(nodes::SetData::new(config))));
+        self.register("child_workflow_trigger", |_, _| Ok(Box::new(nodes::ChildWorkflowTrigger)));
+        self.register("console_output", |_, _| Ok(Box::new(nodes::ConsoleOutputNode)));
+        self.register("set_data", |config, _| Ok(Box::new(nodes::SetDataNode::new(config))));
         
         self.register("router", |config, _| {
             let key = config.get("key").and_then(|v| v.as_str()).unwrap_or("id");
@@ -170,6 +171,17 @@ impl NodeFactory {
 
         self.register("accumulate", |_, _| {
             Ok(Box::new(nodes::AccumulateNode::new()))
+        });
+
+        self.register("return", |config, _| {
+            let value = config.get("value").cloned();
+            Ok(Box::new(nodes::ReturnNode::new(value)))
+        });
+
+        self.register("execute_workflow", |config, _| {
+            let workflow_path = config.get("workflow_path").and_then(|v| v.as_str()).ok_or_else(|| anyhow::anyhow!("Missing workflow_path"))?.to_string();
+            let inputs = config.get("inputs").cloned();
+            Ok(Box::new(nodes::ExecuteWorkflowNode::new(workflow_path, inputs)))
         });
 
         self.register("agent", |config, secrets| {
