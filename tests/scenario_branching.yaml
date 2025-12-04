@@ -1,0 +1,66 @@
+name: ScenarioBranching
+nodes:
+  - id: trigger
+    type: manual_trigger
+    config: {}
+
+  - id: data_source
+    type: code
+    config:
+      code: |
+        output = {
+          "items": [
+            {"id": 1, "amount": 150, "type": "order"},
+            {"id": 2, "amount": 50, "type": "order"},
+            {"id": 3, "amount": 200, "type": "order"},
+            {"id": 4, "amount": 80, "type": "order"}
+          ]
+        };
+
+  # We need to split the list into individual items to route them.
+  # Since we don't have a dedicated "Split" node yet, we'll use a Code node to output an array
+  # and rely on the Executor's ability to handle array outputs if implemented, 
+  # OR we will just simulate single item flow for now to test routing.
+  # Actually, the Executor doesn't automatically split arrays from Code nodes.
+  # Let's assume we are processing a single item for simplicity of this specific test, 
+  # or use a Polling node which DOES split arrays.
+  # Let's use a Polling node with a mock HTTP server (or just file source if we had one).
+  # Wait, we have a `FileSource` node! Let's use that if possible, or just `Code` node and assume we process the whole batch.
+  # But Router routes the WHOLE message.
+  # To test branching properly with "items", we need to iterate.
+  # For this test, let's just route the WHOLE batch based on a summary stat, 
+  # OR better, let's just use a simple condition: "If total > 300".
+  
+  # Revised Plan for Scenario 1:
+  # 1. Generate Data (Total Amount = 480)
+  # 2. Router: If items[0].amount > 100 -> Path A, else Path B.
+  # This tests routing.
+  
+  - id: router
+    type: router
+    config:
+      key: "items[0].amount"
+      value: 150 # Number type to match JSON data
+      # The current Router only supports equality check on string values.
+      # This is a discovery! We need better routing logic (expressions).
+      # For now, let's test equality.
+
+  - id: path_a
+    type: console_output
+    config: {}
+
+  - id: path_b
+    type: console_output
+    config: {}
+    
+edges:
+  - from: trigger
+    to: data_source
+  - from: data_source
+    to: router
+  - from: router
+    from_port: 0 # Match
+    to: path_a
+  - from: router
+    from_port: 1 # No Match (Default)
+    to: path_b

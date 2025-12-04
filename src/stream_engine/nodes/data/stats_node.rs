@@ -26,7 +26,7 @@ impl StreamNode for StatsNode {
         }
 
         let mut input = inputs.remove(0);
-        let output = outputs.get(0).unwrap();
+        let output = outputs.first().unwrap();
 
         let mut data_map: HashMap<String, Vec<f64>> = HashMap::new();
         for col in &self.columns {

@@ -1,0 +1,39 @@
+name: "Router Operators Test"
+nodes:
+  - id: "trigger"
+    type: "manual_trigger"
+    config: {}
+  
+  - id: "set_age"
+    type: "set_data"
+    config:
+      json:
+        age: 25
+        name: "Alice"
+
+  - id: "check_age"
+    type: "router"
+    config:
+      key: "json.age"
+      operator: ">"
+      value: 18
+
+  - id: "log_adult"
+    type: "console_output"
+    config: {}
+
+  - id: "log_minor"
+    type: "console_output"
+    config: {}
+
+edges:
+  - from: "trigger"
+    to: "set_age"
+  - from: "set_age"
+    to: "check_age"
+  - from: "check_age"
+    to: "log_adult"
+    from_port: "true"
+  - from: "check_age"
+    to: "log_minor"
+    from_port: "false"

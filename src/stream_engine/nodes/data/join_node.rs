@@ -58,7 +58,7 @@ impl StreamNode for JoinNode {
             return Ok(());
         }
 
-        let output = outputs.get(0);
+        let output = outputs.first();
         if output.is_none() {
             return Ok(());
         }
@@ -90,10 +90,8 @@ impl StreamNode for JoinNode {
                             "right": r_opt.unwrap_or(Value::Null)
                         });
                         output.send(merged).await?;
-                    } else {
-                        if self.mode == JoinMode::Inner && (l_opt.is_none() || r_opt.is_none()) {
-                            break;
-                        }
+                    } else if self.mode == JoinMode::Inner && (l_opt.is_none() || r_opt.is_none()) {
+                        break;
                     }
                 }
             }

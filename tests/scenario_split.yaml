@@ -1,0 +1,35 @@
+name: "Split Node Test"
+nodes:
+  - id: "trigger"
+    type: "manual_trigger"
+    config: {}
+
+  - id: "generate_array"
+    type: "code"
+    config:
+      lang: "js"
+      code: |
+        output = {
+          "items": [
+            {"id": 1, "name": "Item 1"},
+            {"id": 2, "name": "Item 2"},
+            {"id": 3, "name": "Item 3"}
+          ]
+        };
+
+  - id: "split_items"
+    type: "split"
+    config:
+      path: "items"
+
+  - id: "log_item"
+    type: "console_output"
+    config: {}
+
+edges:
+  - from: "trigger"
+    to: "generate_array"
+  - from: "generate_array"
+    to: "split_items"
+  - from: "split_items"
+    to: "log_item"

@@ -19,7 +19,7 @@ impl FileSource {
 #[async_trait]
 impl StreamNode for FileSource {
     async fn run(&self, mut inputs: Vec<Receiver<Value>>, outputs: Vec<Sender<Value>>) -> Result<()> {
-        let output = outputs.get(0).ok_or_else(|| anyhow!("FileSource has no output"))?;
+        let output = outputs.first().ok_or_else(|| anyhow!("FileSource has no output"))?;
         
         // If we have inputs, wait for a signal/path
         if !inputs.is_empty() {

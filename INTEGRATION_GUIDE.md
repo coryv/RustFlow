@@ -62,6 +62,7 @@ nodes:
 - `name`: Name of the node (e.g., "PostMessage").
 - `type`: Node category (currently mostly `action`).
 - `documentation`: (Optional) Markdown documentation for the node.
+- `outputs`: (Optional) List of named outputs (e.g., `success`, `error`). Defaults to a single output if omitted.
 - `implementation`: Implementation details.
 - `properties`: List of input properties.
 
@@ -71,6 +72,7 @@ nodes:
 - `url`: Target URL. Supports Jinja2 templating (e.g., `{{ id }}`).
 - `headers`: Map of headers. Supports templating.
 - `body`: Request body (JSON or string). Supports templating.
+- `transform`: (Optional) JMESPath expression to transform the response body before outputting.
 
 ### Property
 - `name`: Internal variable name.
@@ -79,6 +81,29 @@ nodes:
 - `required`: Boolean.
 - `default`: Default value.
 - `options`: List of options for `select` type.
+
+## Advanced Features
+
+### Multiple Outputs
+You can define multiple named outputs for a node to handle different outcomes (e.g., success vs. error).
+
+```yaml
+outputs:
+  - name: success
+  - name: error
+```
+
+In the implementation, the system will automatically route successful HTTP responses to the `success` output (or the first output if `success` isn't found) and errors to the `error` output.
+
+### Data Transformation
+You can use [JMESPath](https://jmespath.org/) to transform the response data before it is passed to the next node. This is useful for extracting specific fields or restructuring the JSON.
+
+```yaml
+implementation:
+  type: http
+  # ...
+  transform: "results[].{id: id, name: title}"
+```
 
 ## Templating
 

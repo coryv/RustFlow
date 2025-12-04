@@ -1,0 +1,2577 @@
+warning: field `node_type` is never read
+  --> build.rs:33:5
+   |
+30 | struct IntegrationNode {
+   |        --------------- field in this struct
+...
+33 |     node_type: String,
+   |     ^^^^^^^^^
+   |
+   = note: `IntegrationNode` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rust_flow` (build script) generated 1 warning
+    Checking rust_flow v0.1.0 (/Users/coryvogan/Documents/Dev/RustFlow)
+warning: unused imports: `PasswordHash` and `PasswordVerifier`
+  --> src/storage/sqlite.rs:11:9
+   |
+11 |         PasswordHash, PasswordHasher, PasswordVerifier, SaltString
+   |         ^^^^^^^^^^^^                  ^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `Deserialize`
+ --> src/storage/remote.rs:7:13
+  |
+7 | use serde::{Deserialize, Serialize};
+  |             ^^^^^^^^^^^
+
+warning: unused import: `DateTime`
+ --> src/storage/postgres.rs:6:19
+  |
+6 | use chrono::{Utc, DateTime};
+  |                   ^^^^^^^^
+
+warning: unused imports: `PasswordHash` and `PasswordVerifier`
+  --> src/storage/postgres.rs:11:9
+   |
+11 |         PasswordHash, PasswordHasher, PasswordVerifier, SaltString
+   |         ^^^^^^^^^^^^                  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `super :: *`
+ --> /Users/coryvogan/Documents/Dev/RustFlow/target/debug/build/rust_flow-a2173afe8ba2215c/out/integrations.rs:1:21
+  |
+1 | pub mod slack { use super :: * ; pub struct SlackPostMessage { client : reqwest :: Client , } impl SlackPostMessage { pub fn new () -> Se...
+  |                     ^^^^^^^^^^
+
+warning: unused import: `super :: *`
+ --> /Users/coryvogan/Documents/Dev/RustFlow/target/debug/build/rust_flow-a2173afe8ba2215c/out/integrations.rs:1:2738
+  |
+1 | ...iled: {}" , e) ; } } } } } Ok (()) } } } pub mod notion { use super :: * ; pub struct NotionPageCreated { client : reqwest :: Client ,...
+  |                                                                  ^^^^^^^^^^
+
+error[E0277]: the trait bound `Uuid: sqlx::Encode<'_, _>` is not satisfied
+  --> src/storage/postgres.rs:94:15
+   |
+94 |         .bind(id)
+   |          ---- ^^ the trait `sqlx::Encode<'_, _>` is not implemented for `Uuid`
+   |          |
+   |          required by a bound introduced by this call
+   |
+   = help: the following other types implement trait `sqlx::Encode<'q, DB>`:
+             `&'a str` implements `sqlx::Encode<'a, sqlx::Any>`
+             `&'q [u8]` implements `sqlx::Encode<'q, Sqlite>`
+             `&'q [u8]` implements `sqlx::Encode<'q, sqlx::Any>`
+             `&'q str` implements `sqlx::Encode<'q, Sqlite>`
+             `&T` implements `sqlx::Encode<'q, DB>`
+             `&[T]` implements `sqlx::Encode<'q, Postgres>`
+             `&[u8]` implements `sqlx::Encode<'_, Postgres>`
+             `&str` implements `sqlx::Encode<'_, Postgres>`
+           and 71 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+  --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:25
+   |
+86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+   |                         ^^^^^^^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<_>` is not satisfied
+  --> src/storage/postgres.rs:94:15
+   |
+94 |         .bind(id)
+   |          ---- ^^ the trait `sqlx::Type<_>` is not implemented for `Uuid`
+   |          |
+   |          required by a bound introduced by this call
+   |
+   = help: the following other types implement trait `sqlx::Type<DB>`:
+             `&T` implements `sqlx::Type<DB>`
+             `()` implements `sqlx::Type<Postgres>`
+             `(T1, T2)` implements `sqlx::Type<Postgres>`
+             `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+             `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+             `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+             `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+             `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+           and 78 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+  --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:42
+   |
+86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+   |                                          ^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+help: use a unary tuple instead
+   |
+94 |         .bind((id,))
+   |               +  ++
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Encode<'_, _>` is not satisfied
+  --> src/storage/postgres.rs:97:15
+   |
+97 |         .bind(created_at)
+   |          ---- ^^^^^^^^^^ the trait `sqlx::Encode<'_, _>` is not implemented for `DateTime<Utc>`
+   |          |
+   |          required by a bound introduced by this call
+   |
+   = help: the following other types implement trait `sqlx::Encode<'q, DB>`:
+             `&'a str` implements `sqlx::Encode<'a, sqlx::Any>`
+             `&'q [u8]` implements `sqlx::Encode<'q, Sqlite>`
+             `&'q [u8]` implements `sqlx::Encode<'q, sqlx::Any>`
+             `&'q str` implements `sqlx::Encode<'q, Sqlite>`
+             `&T` implements `sqlx::Encode<'q, DB>`
+             `&[T]` implements `sqlx::Encode<'q, Postgres>`
+             `&[u8]` implements `sqlx::Encode<'_, Postgres>`
+             `&str` implements `sqlx::Encode<'_, Postgres>`
+           and 71 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+  --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:25
+   |
+86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+   |                         ^^^^^^^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Type<_>` is not satisfied
+  --> src/storage/postgres.rs:97:15
+   |
+97 |         .bind(created_at)
+   |          ---- ^^^^^^^^^^ the trait `sqlx::Type<_>` is not implemented for `DateTime<Utc>`
+   |          |
+   |          required by a bound introduced by this call
+   |
+   = help: the following other types implement trait `sqlx::Type<DB>`:
+             `&T` implements `sqlx::Type<DB>`
+             `()` implements `sqlx::Type<Postgres>`
+             `(T1, T2)` implements `sqlx::Type<Postgres>`
+             `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+             `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+             `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+             `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+             `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+           and 78 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+  --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:42
+   |
+86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+   |                                          ^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+help: use a unary tuple instead
+   |
+97 |         .bind((created_at,))
+   |               +          ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Encode<'_, _>` is not satisfied
+   --> src/storage/postgres.rs:111:19
+    |
+111 |             .bind(id)
+    |              ---- ^^ the trait `sqlx::Encode<'_, _>` is not implemented for `Uuid`
+    |              |
+    |              required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Encode<'q, DB>`:
+              `&'a str` implements `sqlx::Encode<'a, sqlx::Any>`
+              `&'q [u8]` implements `sqlx::Encode<'q, Sqlite>`
+              `&'q [u8]` implements `sqlx::Encode<'q, sqlx::Any>`
+              `&'q str` implements `sqlx::Encode<'q, Sqlite>`
+              `&T` implements `sqlx::Encode<'q, DB>`
+              `&[T]` implements `sqlx::Encode<'q, Postgres>`
+              `&[u8]` implements `sqlx::Encode<'_, Postgres>`
+              `&str` implements `sqlx::Encode<'_, Postgres>`
+            and 71 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:25
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                         ^^^^^^^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<_>` is not satisfied
+   --> src/storage/postgres.rs:111:19
+    |
+111 |             .bind(id)
+    |              ---- ^^ the trait `sqlx::Type<_>` is not implemented for `Uuid`
+    |              |
+    |              required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:42
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                                          ^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+help: use a unary tuple instead
+    |
+111 |             .bind((id,))
+    |                   +  ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:117:25
+    |
+117 |                 id: row.get("id"),
+    |                         ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:117:25
+    |
+117 |                 id: row.get("id"),
+    |                         ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+117 |                 id: (row,).get("id"),
+    |                     +   ++
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:120:33
+    |
+120 |                 created_at: row.get("created_at"),
+    |                                 ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `DateTime<Utc>`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:120:33
+    |
+120 |                 created_at: row.get("created_at"),
+    |                                 ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `DateTime<Utc>`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+120 |                 created_at: (row,).get("created_at"),
+    |                             +   ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:135:25
+    |
+135 |                 id: row.get("id"),
+    |                         ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:135:25
+    |
+135 |                 id: row.get("id"),
+    |                         ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+135 |                 id: (row,).get("id"),
+    |                     +   ++
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:138:33
+    |
+138 |                 created_at: row.get("created_at"),
+    |                                 ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `DateTime<Utc>`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:138:33
+    |
+138 |                 created_at: row.get("created_at"),
+    |                                 ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `DateTime<Utc>`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+138 |                 created_at: (row,).get("created_at"),
+    |                             +   ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Encode<'_, _>` is not satisfied
+   --> src/storage/postgres.rs:153:15
+    |
+153 |         .bind(id)
+    |          ---- ^^ the trait `sqlx::Encode<'_, _>` is not implemented for `Uuid`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Encode<'q, DB>`:
+              `&'a str` implements `sqlx::Encode<'a, sqlx::Any>`
+              `&'q [u8]` implements `sqlx::Encode<'q, Sqlite>`
+              `&'q [u8]` implements `sqlx::Encode<'q, sqlx::Any>`
+              `&'q str` implements `sqlx::Encode<'q, Sqlite>`
+              `&T` implements `sqlx::Encode<'q, DB>`
+              `&[T]` implements `sqlx::Encode<'q, Postgres>`
+              `&[u8]` implements `sqlx::Encode<'_, Postgres>`
+              `&str` implements `sqlx::Encode<'_, Postgres>`
+            and 71 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:25
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                         ^^^^^^^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<_>` is not satisfied
+   --> src/storage/postgres.rs:153:15
+    |
+153 |         .bind(id)
+    |          ---- ^^ the trait `sqlx::Type<_>` is not implemented for `Uuid`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:42
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                                          ^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+help: use a unary tuple instead
+    |
+153 |         .bind((id,))
+    |               +  ++
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Encode<'_, _>` is not satisfied
+   --> src/storage/postgres.rs:155:15
+    |
+155 |         .bind(created_at)
+    |          ---- ^^^^^^^^^^ the trait `sqlx::Encode<'_, _>` is not implemented for `DateTime<Utc>`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Encode<'q, DB>`:
+              `&'a str` implements `sqlx::Encode<'a, sqlx::Any>`
+              `&'q [u8]` implements `sqlx::Encode<'q, Sqlite>`
+              `&'q [u8]` implements `sqlx::Encode<'q, sqlx::Any>`
+              `&'q str` implements `sqlx::Encode<'q, Sqlite>`
+              `&T` implements `sqlx::Encode<'q, DB>`
+              `&[T]` implements `sqlx::Encode<'q, Postgres>`
+              `&[u8]` implements `sqlx::Encode<'_, Postgres>`
+              `&str` implements `sqlx::Encode<'_, Postgres>`
+            and 71 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:25
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                         ^^^^^^^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Type<_>` is not satisfied
+   --> src/storage/postgres.rs:155:15
+    |
+155 |         .bind(created_at)
+    |          ---- ^^^^^^^^^^ the trait `sqlx::Type<_>` is not implemented for `DateTime<Utc>`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:42
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                                          ^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+help: use a unary tuple instead
+    |
+155 |         .bind((created_at,))
+    |               +          ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Encode<'_, _>` is not satisfied
+   --> src/storage/postgres.rs:168:19
+    |
+168 |             .bind(id)
+    |              ---- ^^ the trait `sqlx::Encode<'_, _>` is not implemented for `Uuid`
+    |              |
+    |              required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Encode<'q, DB>`:
+              `&'a str` implements `sqlx::Encode<'a, sqlx::Any>`
+              `&'q [u8]` implements `sqlx::Encode<'q, Sqlite>`
+              `&'q [u8]` implements `sqlx::Encode<'q, sqlx::Any>`
+              `&'q str` implements `sqlx::Encode<'q, Sqlite>`
+              `&T` implements `sqlx::Encode<'q, DB>`
+              `&[T]` implements `sqlx::Encode<'q, Postgres>`
+              `&[u8]` implements `sqlx::Encode<'_, Postgres>`
+              `&str` implements `sqlx::Encode<'_, Postgres>`
+            and 71 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:25
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                         ^^^^^^^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<_>` is not satisfied
+   --> src/storage/postgres.rs:168:19
+    |
+168 |             .bind(id)
+    |              ---- ^^ the trait `sqlx::Type<_>` is not implemented for `Uuid`
+    |              |
+    |              required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:42
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                                          ^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+help: use a unary tuple instead
+    |
+168 |             .bind((id,))
+    |                   +  ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:174:25
+    |
+174 |                 id: row.get("id"),
+    |                         ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:174:25
+    |
+174 |                 id: row.get("id"),
+    |                         ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+174 |                 id: (row,).get("id"),
+    |                     +   ++
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:176:33
+    |
+176 |                 created_at: row.get("created_at"),
+    |                                 ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `DateTime<Utc>`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:176:33
+    |
+176 |                 created_at: row.get("created_at"),
+    |                                 ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `DateTime<Utc>`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+176 |                 created_at: (row,).get("created_at"),
+    |                             +   ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:191:25
+    |
+191 |                 id: row.get("id"),
+    |                         ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:191:25
+    |
+191 |                 id: row.get("id"),
+    |                         ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+191 |                 id: (row,).get("id"),
+    |                     +   ++
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:193:33
+    |
+193 |                 created_at: row.get("created_at"),
+    |                                 ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `DateTime<Utc>`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:193:33
+    |
+193 |                 created_at: row.get("created_at"),
+    |                                 ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `DateTime<Utc>`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+193 |                 created_at: (row,).get("created_at"),
+    |                             +   ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Encode<'_, _>` is not satisfied
+   --> src/storage/postgres.rs:207:15
+    |
+207 |         .bind(user_id)
+    |          ---- ^^^^^^^ the trait `sqlx::Encode<'_, _>` is not implemented for `Uuid`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Encode<'q, DB>`:
+              `&'a str` implements `sqlx::Encode<'a, sqlx::Any>`
+              `&'q [u8]` implements `sqlx::Encode<'q, Sqlite>`
+              `&'q [u8]` implements `sqlx::Encode<'q, sqlx::Any>`
+              `&'q str` implements `sqlx::Encode<'q, Sqlite>`
+              `&T` implements `sqlx::Encode<'q, DB>`
+              `&[T]` implements `sqlx::Encode<'q, Postgres>`
+              `&[u8]` implements `sqlx::Encode<'_, Postgres>`
+              `&str` implements `sqlx::Encode<'_, Postgres>`
+            and 71 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:25
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                         ^^^^^^^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<_>` is not satisfied
+   --> src/storage/postgres.rs:207:15
+    |
+207 |         .bind(user_id)
+    |          ---- ^^^^^^^ the trait `sqlx::Type<_>` is not implemented for `Uuid`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:42
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                                          ^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+help: use a unary tuple instead
+    |
+207 |         .bind((user_id,))
+    |               +       ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:214:25
+    |
+214 |                 id: row.get("id"),
+    |                         ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:214:25
+    |
+214 |                 id: row.get("id"),
+    |                         ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+214 |                 id: (row,).get("id"),
+    |                     +   ++
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:216:33
+    |
+216 |                 created_at: row.get("created_at"),
+    |                                 ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `DateTime<Utc>`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:216:33
+    |
+216 |                 created_at: row.get("created_at"),
+    |                                 ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `DateTime<Utc>`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+216 |                 created_at: (row,).get("created_at"),
+    |                             +   ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Encode<'_, _>` is not satisfied
+   --> src/storage/postgres.rs:231:15
+    |
+231 |         .bind(user_id)
+    |          ---- ^^^^^^^ the trait `sqlx::Encode<'_, _>` is not implemented for `Uuid`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Encode<'q, DB>`:
+              `&'a str` implements `sqlx::Encode<'a, sqlx::Any>`
+              `&'q [u8]` implements `sqlx::Encode<'q, Sqlite>`
+              `&'q [u8]` implements `sqlx::Encode<'q, sqlx::Any>`
+              `&'q str` implements `sqlx::Encode<'q, Sqlite>`
+              `&T` implements `sqlx::Encode<'q, DB>`
+              `&[T]` implements `sqlx::Encode<'q, Postgres>`
+              `&[u8]` implements `sqlx::Encode<'_, Postgres>`
+              `&str` implements `sqlx::Encode<'_, Postgres>`
+            and 71 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:25
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                         ^^^^^^^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<_>` is not satisfied
+   --> src/storage/postgres.rs:231:15
+    |
+231 |         .bind(user_id)
+    |          ---- ^^^^^^^ the trait `sqlx::Type<_>` is not implemented for `Uuid`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:42
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                                          ^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+help: use a unary tuple instead
+    |
+231 |         .bind((user_id,))
+    |               +       ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Encode<'_, _>` is not satisfied
+   --> src/storage/postgres.rs:232:15
+    |
+232 |         .bind(team_id)
+    |          ---- ^^^^^^^ the trait `sqlx::Encode<'_, _>` is not implemented for `Uuid`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Encode<'q, DB>`:
+              `&'a str` implements `sqlx::Encode<'a, sqlx::Any>`
+              `&'q [u8]` implements `sqlx::Encode<'q, Sqlite>`
+              `&'q [u8]` implements `sqlx::Encode<'q, sqlx::Any>`
+              `&'q str` implements `sqlx::Encode<'q, Sqlite>`
+              `&T` implements `sqlx::Encode<'q, DB>`
+              `&[T]` implements `sqlx::Encode<'q, Postgres>`
+              `&[u8]` implements `sqlx::Encode<'_, Postgres>`
+              `&str` implements `sqlx::Encode<'_, Postgres>`
+            and 71 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:25
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                         ^^^^^^^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<_>` is not satisfied
+   --> src/storage/postgres.rs:232:15
+    |
+232 |         .bind(team_id)
+    |          ---- ^^^^^^^ the trait `sqlx::Type<_>` is not implemented for `Uuid`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:42
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                                          ^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+help: use a unary tuple instead
+    |
+232 |         .bind((team_id,))
+    |               +       ++
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Encode<'_, _>` is not satisfied
+   --> src/storage/postgres.rs:234:15
+    |
+234 |         .bind(joined_at)
+    |          ---- ^^^^^^^^^ the trait `sqlx::Encode<'_, _>` is not implemented for `DateTime<Utc>`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Encode<'q, DB>`:
+              `&'a str` implements `sqlx::Encode<'a, sqlx::Any>`
+              `&'q [u8]` implements `sqlx::Encode<'q, Sqlite>`
+              `&'q [u8]` implements `sqlx::Encode<'q, sqlx::Any>`
+              `&'q str` implements `sqlx::Encode<'q, Sqlite>`
+              `&T` implements `sqlx::Encode<'q, DB>`
+              `&[T]` implements `sqlx::Encode<'q, Postgres>`
+              `&[u8]` implements `sqlx::Encode<'_, Postgres>`
+              `&str` implements `sqlx::Encode<'_, Postgres>`
+            and 71 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:25
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                         ^^^^^^^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Type<_>` is not satisfied
+   --> src/storage/postgres.rs:234:15
+    |
+234 |         .bind(joined_at)
+    |          ---- ^^^^^^^^^ the trait `sqlx::Type<_>` is not implemented for `DateTime<Utc>`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:42
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                                          ^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+help: use a unary tuple instead
+    |
+234 |         .bind((joined_at,))
+    |               +         ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Encode<'_, _>` is not satisfied
+   --> src/storage/postgres.rs:242:19
+    |
+242 |             .bind(team_id)
+    |              ---- ^^^^^^^ the trait `sqlx::Encode<'_, _>` is not implemented for `Uuid`
+    |              |
+    |              required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Encode<'q, DB>`:
+              `&'a str` implements `sqlx::Encode<'a, sqlx::Any>`
+              `&'q [u8]` implements `sqlx::Encode<'q, Sqlite>`
+              `&'q [u8]` implements `sqlx::Encode<'q, sqlx::Any>`
+              `&'q str` implements `sqlx::Encode<'q, Sqlite>`
+              `&T` implements `sqlx::Encode<'q, DB>`
+              `&[T]` implements `sqlx::Encode<'q, Postgres>`
+              `&[u8]` implements `sqlx::Encode<'_, Postgres>`
+              `&str` implements `sqlx::Encode<'_, Postgres>`
+            and 71 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:25
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                         ^^^^^^^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<_>` is not satisfied
+   --> src/storage/postgres.rs:242:19
+    |
+242 |             .bind(team_id)
+    |              ---- ^^^^^^^ the trait `sqlx::Type<_>` is not implemented for `Uuid`
+    |              |
+    |              required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:42
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                                          ^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+help: use a unary tuple instead
+    |
+242 |             .bind((team_id,))
+    |                   +       ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:250:30
+    |
+250 |                 user_id: row.get("user_id"),
+    |                              ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:250:30
+    |
+250 |                 user_id: row.get("user_id"),
+    |                              ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+250 |                 user_id: (row,).get("user_id"),
+    |                          +   ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:251:30
+    |
+251 |                 team_id: row.get("team_id"),
+    |                              ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:251:30
+    |
+251 |                 team_id: row.get("team_id"),
+    |                              ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+251 |                 team_id: (row,).get("team_id"),
+    |                          +   ++
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:253:32
+    |
+253 |                 joined_at: row.get("joined_at"),
+    |                                ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `DateTime<Utc>`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:253:32
+    |
+253 |                 joined_at: row.get("joined_at"),
+    |                                ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `DateTime<Utc>`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+253 |                 joined_at: (row,).get("joined_at"),
+    |                            +   ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Encode<'_, _>` is not satisfied
+   --> src/storage/postgres.rs:265:15
+    |
+265 |         .bind(workflow.id)
+    |          ---- ^^^^^^^^^^^ the trait `sqlx::Encode<'_, _>` is not implemented for `Uuid`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Encode<'q, DB>`:
+              `&'a str` implements `sqlx::Encode<'a, sqlx::Any>`
+              `&'q [u8]` implements `sqlx::Encode<'q, Sqlite>`
+              `&'q [u8]` implements `sqlx::Encode<'q, sqlx::Any>`
+              `&'q str` implements `sqlx::Encode<'q, Sqlite>`
+              `&T` implements `sqlx::Encode<'q, DB>`
+              `&[T]` implements `sqlx::Encode<'q, Postgres>`
+              `&[u8]` implements `sqlx::Encode<'_, Postgres>`
+              `&str` implements `sqlx::Encode<'_, Postgres>`
+            and 71 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:25
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                         ^^^^^^^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<_>` is not satisfied
+   --> src/storage/postgres.rs:265:15
+    |
+265 |         .bind(workflow.id)
+    |          ---- ^^^^^^^^^^^ the trait `sqlx::Type<_>` is not implemented for `Uuid`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:42
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                                          ^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+help: use a unary tuple instead
+    |
+265 |         .bind((workflow.id,))
+    |               +           ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Encode<'_, _>` is not satisfied
+   --> src/storage/postgres.rs:266:15
+    |
+266 |         .bind(workflow.account_id)
+    |          ---- ^^^^^^^^^^^^^^^^^^^ the trait `sqlx::Encode<'_, _>` is not implemented for `Uuid`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Encode<'q, DB>`:
+              `&'a str` implements `sqlx::Encode<'a, sqlx::Any>`
+              `&'q [u8]` implements `sqlx::Encode<'q, Sqlite>`
+              `&'q [u8]` implements `sqlx::Encode<'q, sqlx::Any>`
+              `&'q str` implements `sqlx::Encode<'q, Sqlite>`
+              `&T` implements `sqlx::Encode<'q, DB>`
+              `&[T]` implements `sqlx::Encode<'q, Postgres>`
+              `&[u8]` implements `sqlx::Encode<'_, Postgres>`
+              `&str` implements `sqlx::Encode<'_, Postgres>`
+            and 71 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:25
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                         ^^^^^^^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<_>` is not satisfied
+   --> src/storage/postgres.rs:266:15
+    |
+266 |         .bind(workflow.account_id)
+    |          ---- ^^^^^^^^^^^^^^^^^^^ the trait `sqlx::Type<_>` is not implemented for `Uuid`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:42
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                                          ^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+help: use a unary tuple instead
+    |
+266 |         .bind((workflow.account_id,))
+    |               +                   ++
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Encode<'_, _>` is not satisfied
+   --> src/storage/postgres.rs:269:15
+    |
+269 |         .bind(workflow.created_at)
+    |          ---- ^^^^^^^^^^^^^^^^^^^ the trait `sqlx::Encode<'_, _>` is not implemented for `DateTime<Utc>`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Encode<'q, DB>`:
+              `&'a str` implements `sqlx::Encode<'a, sqlx::Any>`
+              `&'q [u8]` implements `sqlx::Encode<'q, Sqlite>`
+              `&'q [u8]` implements `sqlx::Encode<'q, sqlx::Any>`
+              `&'q str` implements `sqlx::Encode<'q, Sqlite>`
+              `&T` implements `sqlx::Encode<'q, DB>`
+              `&[T]` implements `sqlx::Encode<'q, Postgres>`
+              `&[u8]` implements `sqlx::Encode<'_, Postgres>`
+              `&str` implements `sqlx::Encode<'_, Postgres>`
+            and 71 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:25
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                         ^^^^^^^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Type<_>` is not satisfied
+   --> src/storage/postgres.rs:269:15
+    |
+269 |         .bind(workflow.created_at)
+    |          ---- ^^^^^^^^^^^^^^^^^^^ the trait `sqlx::Type<_>` is not implemented for `DateTime<Utc>`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:42
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                                          ^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+help: use a unary tuple instead
+    |
+269 |         .bind((workflow.created_at,))
+    |               +                   ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Encode<'_, _>` is not satisfied
+   --> src/storage/postgres.rs:277:19
+    |
+277 |             .bind(id)
+    |              ---- ^^ the trait `sqlx::Encode<'_, _>` is not implemented for `Uuid`
+    |              |
+    |              required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Encode<'q, DB>`:
+              `&'a str` implements `sqlx::Encode<'a, sqlx::Any>`
+              `&'q [u8]` implements `sqlx::Encode<'q, Sqlite>`
+              `&'q [u8]` implements `sqlx::Encode<'q, sqlx::Any>`
+              `&'q str` implements `sqlx::Encode<'q, Sqlite>`
+              `&T` implements `sqlx::Encode<'q, DB>`
+              `&[T]` implements `sqlx::Encode<'q, Postgres>`
+              `&[u8]` implements `sqlx::Encode<'_, Postgres>`
+              `&str` implements `sqlx::Encode<'_, Postgres>`
+            and 71 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:25
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                         ^^^^^^^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<_>` is not satisfied
+   --> src/storage/postgres.rs:277:19
+    |
+277 |             .bind(id)
+    |              ---- ^^ the trait `sqlx::Type<_>` is not implemented for `Uuid`
+    |              |
+    |              required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:42
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                                          ^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+help: use a unary tuple instead
+    |
+277 |             .bind((id,))
+    |                   +  ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:283:25
+    |
+283 |                 id: row.get("id"),
+    |                         ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:283:25
+    |
+283 |                 id: row.get("id"),
+    |                         ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+283 |                 id: (row,).get("id"),
+    |                     +   ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:284:33
+    |
+284 |                 account_id: row.get("account_id"),
+    |                                 ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:284:33
+    |
+284 |                 account_id: row.get("account_id"),
+    |                                 ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+284 |                 account_id: (row,).get("account_id"),
+    |                             +   ++
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:287:33
+    |
+287 |                 created_at: row.get("created_at"),
+    |                                 ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `DateTime<Utc>`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:287:33
+    |
+287 |                 created_at: row.get("created_at"),
+    |                                 ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `DateTime<Utc>`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+287 |                 created_at: (row,).get("created_at"),
+    |                             +   ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Encode<'_, _>` is not satisfied
+   --> src/storage/postgres.rs:296:19
+    |
+296 |             .bind(team_id)
+    |              ---- ^^^^^^^ the trait `sqlx::Encode<'_, _>` is not implemented for `Uuid`
+    |              |
+    |              required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Encode<'q, DB>`:
+              `&'a str` implements `sqlx::Encode<'a, sqlx::Any>`
+              `&'q [u8]` implements `sqlx::Encode<'q, Sqlite>`
+              `&'q [u8]` implements `sqlx::Encode<'q, sqlx::Any>`
+              `&'q str` implements `sqlx::Encode<'q, Sqlite>`
+              `&T` implements `sqlx::Encode<'q, DB>`
+              `&[T]` implements `sqlx::Encode<'q, Postgres>`
+              `&[u8]` implements `sqlx::Encode<'_, Postgres>`
+              `&str` implements `sqlx::Encode<'_, Postgres>`
+            and 71 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:25
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                         ^^^^^^^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<_>` is not satisfied
+   --> src/storage/postgres.rs:296:19
+    |
+296 |             .bind(team_id)
+    |              ---- ^^^^^^^ the trait `sqlx::Type<_>` is not implemented for `Uuid`
+    |              |
+    |              required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:42
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                                          ^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+help: use a unary tuple instead
+    |
+296 |             .bind((team_id,))
+    |                   +       ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:303:25
+    |
+303 |                 id: row.get("id"),
+    |                         ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:303:25
+    |
+303 |                 id: row.get("id"),
+    |                         ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+303 |                 id: (row,).get("id"),
+    |                     +   ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:304:33
+    |
+304 |                 account_id: row.get("account_id"),
+    |                                 ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:304:33
+    |
+304 |                 account_id: row.get("account_id"),
+    |                                 ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+304 |                 account_id: (row,).get("account_id"),
+    |                             +   ++
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:307:33
+    |
+307 |                 created_at: row.get("created_at"),
+    |                                 ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `DateTime<Utc>`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:307:33
+    |
+307 |                 created_at: row.get("created_at"),
+    |                                 ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `DateTime<Utc>`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+307 |                 created_at: (row,).get("created_at"),
+    |                             +   ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Encode<'_, _>` is not satisfied
+   --> src/storage/postgres.rs:348:15
+    |
+348 |         .bind(id)
+    |          ---- ^^ the trait `sqlx::Encode<'_, _>` is not implemented for `Uuid`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Encode<'q, DB>`:
+              `&'a str` implements `sqlx::Encode<'a, sqlx::Any>`
+              `&'q [u8]` implements `sqlx::Encode<'q, Sqlite>`
+              `&'q [u8]` implements `sqlx::Encode<'q, sqlx::Any>`
+              `&'q str` implements `sqlx::Encode<'q, Sqlite>`
+              `&T` implements `sqlx::Encode<'q, DB>`
+              `&[T]` implements `sqlx::Encode<'q, Postgres>`
+              `&[u8]` implements `sqlx::Encode<'_, Postgres>`
+              `&str` implements `sqlx::Encode<'_, Postgres>`
+            and 71 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:25
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                         ^^^^^^^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<_>` is not satisfied
+   --> src/storage/postgres.rs:348:15
+    |
+348 |         .bind(id)
+    |          ---- ^^ the trait `sqlx::Type<_>` is not implemented for `Uuid`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:42
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                                          ^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+help: use a unary tuple instead
+    |
+348 |         .bind((id,))
+    |               +  ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Encode<'_, _>` is not satisfied
+   --> src/storage/postgres.rs:349:15
+    |
+349 |         .bind(team_id)
+    |          ---- ^^^^^^^ the trait `sqlx::Encode<'_, _>` is not implemented for `Uuid`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Encode<'q, DB>`:
+              `&'a str` implements `sqlx::Encode<'a, sqlx::Any>`
+              `&'q [u8]` implements `sqlx::Encode<'q, Sqlite>`
+              `&'q [u8]` implements `sqlx::Encode<'q, sqlx::Any>`
+              `&'q str` implements `sqlx::Encode<'q, Sqlite>`
+              `&T` implements `sqlx::Encode<'q, DB>`
+              `&[T]` implements `sqlx::Encode<'q, Postgres>`
+              `&[u8]` implements `sqlx::Encode<'_, Postgres>`
+              `&str` implements `sqlx::Encode<'_, Postgres>`
+            and 71 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:25
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                         ^^^^^^^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<_>` is not satisfied
+   --> src/storage/postgres.rs:349:15
+    |
+349 |         .bind(team_id)
+    |          ---- ^^^^^^^ the trait `sqlx::Type<_>` is not implemented for `Uuid`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:42
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                                          ^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+help: use a unary tuple instead
+    |
+349 |         .bind((team_id,))
+    |               +       ++
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Encode<'_, _>` is not satisfied
+   --> src/storage/postgres.rs:353:15
+    |
+353 |         .bind(created_at)
+    |          ---- ^^^^^^^^^^ the trait `sqlx::Encode<'_, _>` is not implemented for `DateTime<Utc>`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Encode<'q, DB>`:
+              `&'a str` implements `sqlx::Encode<'a, sqlx::Any>`
+              `&'q [u8]` implements `sqlx::Encode<'q, Sqlite>`
+              `&'q [u8]` implements `sqlx::Encode<'q, sqlx::Any>`
+              `&'q str` implements `sqlx::Encode<'q, Sqlite>`
+              `&T` implements `sqlx::Encode<'q, DB>`
+              `&[T]` implements `sqlx::Encode<'q, Postgres>`
+              `&[u8]` implements `sqlx::Encode<'_, Postgres>`
+              `&str` implements `sqlx::Encode<'_, Postgres>`
+            and 71 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:25
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                         ^^^^^^^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Type<_>` is not satisfied
+   --> src/storage/postgres.rs:353:15
+    |
+353 |         .bind(created_at)
+    |          ---- ^^^^^^^^^^ the trait `sqlx::Type<_>` is not implemented for `DateTime<Utc>`
+    |          |
+    |          required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:42
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                                          ^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+help: use a unary tuple instead
+    |
+353 |         .bind((created_at,))
+    |               +          ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Encode<'_, _>` is not satisfied
+   --> src/storage/postgres.rs:369:19
+    |
+369 |             .bind(id)
+    |              ---- ^^ the trait `sqlx::Encode<'_, _>` is not implemented for `Uuid`
+    |              |
+    |              required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Encode<'q, DB>`:
+              `&'a str` implements `sqlx::Encode<'a, sqlx::Any>`
+              `&'q [u8]` implements `sqlx::Encode<'q, Sqlite>`
+              `&'q [u8]` implements `sqlx::Encode<'q, sqlx::Any>`
+              `&'q str` implements `sqlx::Encode<'q, Sqlite>`
+              `&T` implements `sqlx::Encode<'q, DB>`
+              `&[T]` implements `sqlx::Encode<'q, Postgres>`
+              `&[u8]` implements `sqlx::Encode<'_, Postgres>`
+              `&str` implements `sqlx::Encode<'_, Postgres>`
+            and 71 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:25
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                         ^^^^^^^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<_>` is not satisfied
+   --> src/storage/postgres.rs:369:19
+    |
+369 |             .bind(id)
+    |              ---- ^^ the trait `sqlx::Type<_>` is not implemented for `Uuid`
+    |              |
+    |              required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:42
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                                          ^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+help: use a unary tuple instead
+    |
+369 |             .bind((id,))
+    |                   +  ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:375:25
+    |
+375 |                 id: row.get("id"),
+    |                         ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:375:25
+    |
+375 |                 id: row.get("id"),
+    |                         ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+375 |                 id: (row,).get("id"),
+    |                     +   ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:376:33
+    |
+376 |                 account_id: row.get("account_id"),
+    |                                 ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:376:33
+    |
+376 |                 account_id: row.get("account_id"),
+    |                                 ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+376 |                 account_id: (row,).get("account_id"),
+    |                             +   ++
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:380:33
+    |
+380 |                 created_at: row.get("created_at"),
+    |                                 ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `DateTime<Utc>`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:380:33
+    |
+380 |                 created_at: row.get("created_at"),
+    |                                 ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `DateTime<Utc>`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+380 |                 created_at: (row,).get("created_at"),
+    |                             +   ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Encode<'_, _>` is not satisfied
+   --> src/storage/postgres.rs:389:19
+    |
+389 |             .bind(team_id)
+    |              ---- ^^^^^^^ the trait `sqlx::Encode<'_, _>` is not implemented for `Uuid`
+    |              |
+    |              required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Encode<'q, DB>`:
+              `&'a str` implements `sqlx::Encode<'a, sqlx::Any>`
+              `&'q [u8]` implements `sqlx::Encode<'q, Sqlite>`
+              `&'q [u8]` implements `sqlx::Encode<'q, sqlx::Any>`
+              `&'q str` implements `sqlx::Encode<'q, Sqlite>`
+              `&T` implements `sqlx::Encode<'q, DB>`
+              `&[T]` implements `sqlx::Encode<'q, Postgres>`
+              `&[u8]` implements `sqlx::Encode<'_, Postgres>`
+              `&str` implements `sqlx::Encode<'_, Postgres>`
+            and 71 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:25
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                         ^^^^^^^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<_>` is not satisfied
+   --> src/storage/postgres.rs:389:19
+    |
+389 |             .bind(team_id)
+    |              ---- ^^^^^^^ the trait `sqlx::Type<_>` is not implemented for `Uuid`
+    |              |
+    |              required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `Query::<'q, DB, <DB as sqlx::Database>::Arguments<'q>>::bind`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/query.rs:86:42
+    |
+ 86 |     pub fn bind<T: 'q + Encode<'q, DB> + Type<DB>>(mut self, value: T) -> Self {
+    |                                          ^^^^^^^^ required by this bound in `Query::<'q, DB, <DB as Database>::Arguments<'q>>::bind`
+help: use a unary tuple instead
+    |
+389 |             .bind((team_id,))
+    |                   +       ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:396:25
+    |
+396 |                 id: row.get("id"),
+    |                         ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:396:25
+    |
+396 |                 id: row.get("id"),
+    |                         ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+396 |                 id: (row,).get("id"),
+    |                     +   ++
+
+error[E0277]: the trait bound `Uuid: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:397:33
+    |
+397 |                 account_id: row.get("account_id"),
+    |                                 ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `Uuid: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:397:33
+    |
+397 |                 account_id: row.get("account_id"),
+    |                                 ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `Uuid`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+397 |                 account_id: (row,).get("account_id"),
+    |                             +   ++
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Decode<'_, Postgres>` is not satisfied
+   --> src/storage/postgres.rs:401:33
+    |
+401 |                 created_at: row.get("created_at"),
+    |                                 ^^^ the trait `sqlx::Decode<'_, Postgres>` is not implemented for `DateTime<Utc>`
+    |
+    = help: the following other types implement trait `sqlx::Decode<'r, DB>`:
+              `&'a str` implements `sqlx::Decode<'a, sqlx::Any>`
+              `&'r JsonRawValue` implements `sqlx::Decode<'r, DB>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Postgres>`
+              `&'r [u8]` implements `sqlx::Decode<'r, Sqlite>`
+              `&'r [u8]` implements `sqlx::Decode<'r, sqlx::Any>`
+              `&'r str` implements `sqlx::Decode<'r, Postgres>`
+              `&'r str` implements `sqlx::Decode<'r, Sqlite>`
+              `()` implements `sqlx::Decode<'r, Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:12
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+
+error[E0277]: the trait bound `DateTime<Utc>: sqlx::Type<Postgres>` is not satisfied
+   --> src/storage/postgres.rs:401:33
+    |
+401 |                 created_at: row.get("created_at"),
+    |                                 ^^^ the trait `sqlx::Type<Postgres>` is not implemented for `DateTime<Utc>`
+    |
+    = help: the following other types implement trait `sqlx::Type<DB>`:
+              `&T` implements `sqlx::Type<DB>`
+              `()` implements `sqlx::Type<Postgres>`
+              `(T1, T2)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6)` implements `sqlx::Type<Postgres>`
+              `(T1, T2, T3, T4, T5, T6, T7)` implements `sqlx::Type<Postgres>`
+            and 78 others
+note: required by a bound in `sqlx::Row::get`
+   --> /Users/coryvogan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/row.rs:71:41
+    |
+ 68 |     fn get<'r, T, I>(&'r self, index: I) -> T
+    |        --- required by a bound in this associated function
+...
+ 71 |         T: Decode<'r, Self::Database> + Type<Self::Database>,
+    |                                         ^^^^^^^^^^^^^^^^^^^^ required by this bound in `Row::get`
+help: use a unary tuple instead
+    |
+401 |                 created_at: (row,).get("created_at"),
+    |                             +   ++
+
+warning: unused variable: `id`
+  --> src/storage/remote.rs:70:30
+   |
+70 |     async fn get_user(&self, id: Uuid) -> Result<Option<User>> {
+   |                              ^^ help: if this is intentional, prefix it with an underscore: `_id`
+   |
+   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `id`
+   --> src/storage/remote.rs:115:30
+    |
+115 |     async fn get_team(&self, id: Uuid) -> Result<Option<Team>> {
+    |                              ^^ help: if this is intentional, prefix it with an underscore: `_id`
+
+warning: unused variable: `name`
+   --> src/storage/remote.rs:119:38
+    |
+119 |     async fn get_team_by_name(&self, name: &str) -> Result<Option<Team>> {
+    |                                      ^^^^ help: if this is intentional, prefix it with an underscore: `_name`
+
+warning: unused variable: `id`
+   --> src/storage/remote.rs:176:34
+    |
+176 |     async fn get_workflow(&self, id: Uuid) -> Result<Option<WorkflowEntity>> {
+    |                                  ^^ help: if this is intentional, prefix it with an underscore: `_id`
+
+warning: unused variable: `key`
+   --> src/storage/remote.rs:191:28
+    |
+191 |     async fn set_kv(&self, key: &str, value: &Value) -> Result<()> {
+    |                            ^^^ help: if this is intentional, prefix it with an underscore: `_key`
+
+warning: unused variable: `value`
+   --> src/storage/remote.rs:191:39
+    |
+191 |     async fn set_kv(&self, key: &str, value: &Value) -> Result<()> {
+    |                                       ^^^^^ help: if this is intentional, prefix it with an underscore: `_value`
+
+warning: unused variable: `key`
+   --> src/storage/remote.rs:195:28
+    |
+195 |     async fn get_kv(&self, key: &str) -> Result<Option<Value>> {
+    |                            ^^^ help: if this is intentional, prefix it with an underscore: `_key`
+
+warning: unused variable: `id`
+   --> src/storage/remote.rs:222:36
+    |
+222 |     async fn get_credential(&self, id: Uuid) -> Result<Option<Credential>> {
+    |                                    ^^ help: if this is intentional, prefix it with an underscore: `_id`
+
+warning: unused variable: `inputs`
+ --> /Users/coryvogan/Documents/Dev/RustFlow/target/debug/build/rust_flow-a2173afe8ba2215c/out/integrations.rs:1:3038
+  |
+1 | ...{ async fn run (& self , mut inputs : Vec < tokio :: sync :: mpsc :: Receiver < serde_json :: Value >> , outputs : Vec < tokio :: sync...
+  |                                 ^^^^^^ help: if this is intentional, prefix it with an underscore: `_inputs`
+
+warning: variable does not need to be mutable
+ --> /Users/coryvogan/Documents/Dev/RustFlow/target/debug/build/rust_flow-a2173afe8ba2215c/out/integrations.rs:1:3034
+  |
+1 | ...mNode for NotionPageCreated { async fn run (& self , mut inputs : Vec < tokio :: sync :: mpsc :: Receiver < serde_json :: Value >> , o...
+  |                                                         ----^^^^^^
+  |                                                         |
+  |                                                         help: remove this `mut`
+  |
+  = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `inputs`
+ --> /Users/coryvogan/Documents/Dev/RustFlow/target/debug/build/rust_flow-a2173afe8ba2215c/out/integrations.rs:1:6260
+  |
+1 | ...{ async fn run (& self , mut inputs : Vec < tokio :: sync :: mpsc :: Receiver < serde_json :: Value >> , outputs : Vec < tokio :: sync...
+  |                                 ^^^^^^ help: if this is intentional, prefix it with an underscore: `_inputs`
+
+warning: variable does not need to be mutable
+ --> /Users/coryvogan/Documents/Dev/RustFlow/target/debug/build/rust_flow-a2173afe8ba2215c/out/integrations.rs:1:6256
+  |
+1 | ...amNode for NotionNewComment { async fn run (& self , mut inputs : Vec < tokio :: sync :: mpsc :: Receiver < serde_json :: Value >> , o...
+  |                                                         ----^^^^^^
+  |                                                         |
+  |                                                         help: remove this `mut`
+
+For more information about this error, try `rustc --explain E0277`.
+warning: `rust_flow` (lib) generated 18 warnings
+error: could not compile `rust_flow` (lib) due to 92 previous errors; 18 warnings emitted

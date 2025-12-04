@@ -24,7 +24,7 @@ impl FunctionNode {
 impl StreamNode for FunctionNode {
     async fn run(&self, mut inputs: Vec<Receiver<Value>>, outputs: Vec<Sender<Value>>) -> Result<()> {
         if let Some(rx) = inputs.get_mut(0) {
-            if let Some(tx) = outputs.get(0) {
+            if let Some(tx) = outputs.first() {
                 while let Some(data) = rx.recv().await {
                     let result = (self.func)(data)?;
                     tx.send(result).await?;

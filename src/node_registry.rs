@@ -20,11 +20,28 @@ pub struct NodeType {
     pub description: Option<String>,
     pub documentation: Option<String>,
     pub properties: Vec<NodeProperty>,
+    #[serde(default)]
+    pub outputs: Vec<String>, // List of named outputs. If empty, assumes single default output.
 }
 
 pub fn get_node_registry() -> Vec<NodeType> {
-    let mut nodes = vec![
-        // --- Triggers ---
+    let mut nodes = Vec::new();
+    nodes.extend(get_trigger_nodes());
+    nodes.extend(get_action_nodes());
+    nodes.extend(get_logic_nodes());
+    nodes.extend(get_ai_nodes());
+    nodes.extend(get_model_nodes());
+    nodes.extend(get_data_processing_nodes());
+
+    // Append generated integration nodes
+    let mut integrations = crate::integrations::get_integration_node_definitions();
+    nodes.append(&mut integrations);
+
+    nodes
+}
+
+fn get_trigger_nodes() -> Vec<NodeType> {
+    vec![
         NodeType {
             id: "manual_trigger".to_string(),
             label: "Manual Trigger".to_string(),
@@ -32,6 +49,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
             description: Some("Manually start the workflow".to_string()),
             documentation: None,
             properties: vec![],
+            outputs: vec![],
         },
         NodeType {
             id: "time_trigger".to_string(),
@@ -50,6 +68,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     json_schema: None,
                 },
             ],
+            outputs: vec![],
         },
         NodeType {
             id: "webhook_trigger".to_string(),
@@ -77,9 +96,13 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     json_schema: None,
                 },
             ],
+            outputs: vec![],
         },
+    ]
+}
 
-        // --- Actions ---
+fn get_action_nodes() -> Vec<NodeType> {
+    vec![
         NodeType {
             id: "http_request".to_string(),
             label: "HTTP Request".to_string(),
@@ -123,7 +146,26 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     required: false,
                     json_schema: None,
                 },
+                NodeProperty {
+                    name: "retry_count".to_string(),
+                    label: "Retry Count".to_string(),
+                    property_type: "number".to_string(),
+                    options: None,
+                    default: Some("0".to_string()),
+                    required: false,
+                    json_schema: None,
+                },
+                NodeProperty {
+                    name: "retry_delay_ms".to_string(),
+                    label: "Retry Delay (ms)".to_string(),
+                    property_type: "number".to_string(),
+                    options: None,
+                    default: Some("0".to_string()),
+                    required: false,
+                    json_schema: None,
+                },
             ],
+            outputs: vec![],
         },
         NodeType {
             id: "set_data".to_string(),
@@ -142,6 +184,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     json_schema: None,
                 },
             ],
+            outputs: vec![],
         },
         NodeType {
             id: "code".to_string(),
@@ -160,6 +203,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     json_schema: None,
                 },
             ],
+            outputs: vec![],
         },
         NodeType {
             id: "console_output".to_string(),
@@ -168,6 +212,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
             description: Some("Log data to console".to_string()),
             documentation: None,
             properties: vec![],
+            outputs: vec![],
         },
         NodeType {
             id: "delay".to_string(),
@@ -186,9 +231,13 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     json_schema: None,
                 },
             ],
+            outputs: vec![],
         },
+    ]
+}
 
-        // --- Logic ---
+fn get_logic_nodes() -> Vec<NodeType> {
+    vec![
         NodeType {
             id: "router".to_string(),
             label: "Router".to_string(),
@@ -214,10 +263,23 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     required: true,
                     json_schema: None,
                 },
+                NodeProperty {
+                    name: "operator".to_string(),
+                    label: "Operator".to_string(),
+                    property_type: "select".to_string(),
+                    options: Some(vec!["==".to_string(), "!=".to_string(), ">".to_string(), "<".to_string(), ">=".to_string(), "<=".to_string(), "contains".to_string()]),
+                    default: Some("==".to_string()),
+                    required: true,
+                    json_schema: None,
+                },
             ],
+            outputs: vec!["true".to_string(), "false".to_string()],
         },
+    ]
+}
 
-        // --- AI ---
+fn get_ai_nodes() -> Vec<NodeType> {
+    vec![
         NodeType {
             id: "agent".to_string(),
             label: "AI Agent".to_string(),
@@ -253,7 +315,13 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     json_schema: None,
                 },
             ],
+            outputs: vec![],
         },
+    ]
+}
+
+fn get_model_nodes() -> Vec<NodeType> {
+    vec![
         NodeType {
             id: "openai_model".to_string(),
             label: "OpenAI Model".to_string(),
@@ -280,6 +348,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     json_schema: None,
                 },
             ],
+            outputs: vec![],
         },
         NodeType {
             id: "gemini_model".to_string(),
@@ -307,9 +376,13 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     json_schema: None,
                 },
             ],
+            outputs: vec![],
         },
+    ]
+}
 
-        // --- Data Processing ---
+fn get_data_processing_nodes() -> Vec<NodeType> {
+    vec![
         NodeType {
             id: "html_extract".to_string(),
             label: "HTML Extract".to_string(),
@@ -345,6 +418,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     json_schema: None,
                 },
             ],
+            outputs: vec![],
         },
         NodeType {
             id: "join".to_string(),
@@ -381,6 +455,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     json_schema: None,
                 },
             ],
+            outputs: vec![],
         },
         NodeType {
             id: "union".to_string(),
@@ -399,6 +474,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     json_schema: None,
                 },
             ],
+            outputs: vec![],
         },
         NodeType {
             id: "file_source".to_string(),
@@ -417,6 +493,35 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     json_schema: None,
                 },
             ],
+            outputs: vec![],
+        },
+        NodeType {
+            id: "split".to_string(),
+            label: "Split".to_string(),
+            category: "Data Processing".to_string(),
+            description: Some("Split array into individual items".to_string()),
+            documentation: None,
+            properties: vec![
+                NodeProperty {
+                    name: "path".to_string(),
+                    label: "Path to Array (Optional)".to_string(),
+                    property_type: "text".to_string(),
+                    options: None,
+                    default: None,
+                    required: false,
+                    json_schema: None,
+                },
+            ],
+            outputs: vec![],
+        },
+        NodeType {
+            id: "accumulate".to_string(),
+            label: "Accumulate".to_string(),
+            category: "Data Processing".to_string(),
+            description: Some("Accumulate items into a list".to_string()),
+            documentation: None,
+            properties: vec![],
+            outputs: vec![],
         },
         NodeType {
             id: "dedupe".to_string(),
@@ -435,6 +540,7 @@ pub fn get_node_registry() -> Vec<NodeType> {
                     json_schema: None,
                 },
             ],
+            outputs: vec![],
         },
         NodeType {
             id: "group_by".to_string(),
@@ -494,6 +600,7 @@ Groups data by specified keys and performs aggregations on other columns.
                     })),
                 },
             ],
+            outputs: vec![],
         },
         NodeType {
             id: "stats".to_string(),
@@ -539,13 +646,8 @@ Calculates global statistics for the entire dataset.
                     json_schema: None,
                 },
             ],
+            outputs: vec![],
         },
-    ];
-
-    // Append generated integration nodes
-    let mut integrations = crate::integrations::get_integration_node_definitions();
-    nodes.append(&mut integrations);
-
-    nodes
+    ]
 }
 

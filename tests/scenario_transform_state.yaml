@@ -1,0 +1,21 @@
+name: ScenarioTransformState
+nodes:
+  - id: polling_source
+    type: test_polling_get_slides
+    config: {}
+
+  - id: dedupe_downstream
+    type: dedupe
+    config:
+      key: "title"
+
+  - id: log_item
+    type: console_output
+    config: {}
+
+edges:
+  - from: polling_source
+    to: dedupe_downstream
+
+  - from: dedupe_downstream
+    to: log_item

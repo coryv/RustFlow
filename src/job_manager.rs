@@ -29,6 +29,12 @@ pub struct JobManager {
     jobs: Arc<Mutex<HashMap<String, Job>>>,
 }
 
+impl Default for JobManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl JobManager {
     pub fn new() -> Self {
         Self {

@@ -1,9 +1,9 @@
 use async_trait::async_trait;
-use sqlx::{sqlite::SqlitePool, Row};
+use sqlx::{postgres::PgPool, Row};
 use uuid::Uuid;
 use serde_json::Value;
 use anyhow::{Result, anyhow};
-use chrono::{Utc, DateTime};
+use chrono::Utc;
 use super::{Storage, Team, User, TeamMember, Role, WorkflowEntity, Credential};
 use argon2::{
     password_hash::{
@@ -13,66 +13,61 @@ use argon2::{
     Argon2
 };
 
-pub struct SqliteStorage {
-    pool: SqlitePool,
+pub struct PostgresStorage {
+    pool: PgPool,
 }
 
-impl SqliteStorage {
+impl PostgresStorage {
     pub async fn new(database_url: &str) -> Result<Self> {
-        let pool = SqlitePool::connect(database_url).await?;
+        let pool = PgPool::connect(database_url).await?;
         Ok(Self { pool })
     }
 }
 
 #[async_trait]
-impl Storage for SqliteStorage {
+impl Storage for PostgresStorage {
     async fn init(&self) -> Result<()> {
-        // Create tables if not exist
-        // Note: 'accounts' is renamed to 'teams' conceptually, but we'll use 'teams' table name.
-        // If 'accounts' exists, we might want to migrate, but for now we'll just create new tables.
-        // In a real scenario, we'd have a migration script.
-        
         sqlx::query(
             r#"
             CREATE TABLE IF NOT EXISTS users (
-                id TEXT PRIMARY KEY,
+                id UUID PRIMARY KEY,
                 username TEXT NOT NULL UNIQUE,
                 password_hash TEXT NOT NULL,
-                created_at TEXT NOT NULL
+                created_at TIMESTAMPTZ NOT NULL
             );
             CREATE TABLE IF NOT EXISTS teams (
-                id TEXT PRIMARY KEY,
+                id UUID PRIMARY KEY,
                 name TEXT NOT NULL UNIQUE,
-                created_at TEXT NOT NULL
+                created_at TIMESTAMPTZ NOT NULL
             );
             CREATE TABLE IF NOT EXISTS team_members (
-                user_id TEXT NOT NULL,
-                team_id TEXT NOT NULL,
+                user_id UUID NOT NULL,
+                team_id UUID NOT NULL,
                 role TEXT NOT NULL,
-                joined_at TEXT NOT NULL,
+                joined_at TIMESTAMPTZ NOT NULL,
                 PRIMARY KEY (user_id, team_id),
                 FOREIGN KEY(user_id) REFERENCES users(id),
                 FOREIGN KEY(team_id) REFERENCES teams(id)
             );
             CREATE TABLE IF NOT EXISTS workflows (
-                id TEXT PRIMARY KEY,
-                account_id TEXT NOT NULL, -- This is team_id
+                id UUID PRIMARY KEY,
+                account_id UUID NOT NULL,
                 name TEXT NOT NULL,
-                definition TEXT NOT NULL,
-                created_at TEXT NOT NULL,
+                definition JSONB NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL,
                 FOREIGN KEY(account_id) REFERENCES teams(id)
             );
             CREATE TABLE IF NOT EXISTS key_value (
                 key TEXT PRIMARY KEY,
-                value TEXT NOT NULL
+                value JSONB NOT NULL
             );
             CREATE TABLE IF NOT EXISTS credentials (
-                id TEXT PRIMARY KEY,
-                account_id TEXT NOT NULL, -- This is team_id
+                id UUID PRIMARY KEY,
+                account_id UUID NOT NULL,
                 name TEXT NOT NULL,
                 type TEXT NOT NULL,
                 data TEXT NOT NULL,
-                created_at TEXT NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL,
                 FOREIGN KEY(account_id) REFERENCES teams(id)
             );
             "#
@@ -94,12 +89,12 @@ impl Storage for SqliteStorage {
         let created_at = Utc::now();
 
         sqlx::query(
-            "INSERT INTO users (id, username, password_hash, created_at) VALUES (?, ?, ?, ?)"
+            "INSERT INTO users (id, username, password_hash, created_at) VALUES ($1, $2, $3, $4)"
         )
-        .bind(id.to_string())
+        .bind(id)
         .bind(username)
         .bind(&password_hash)
-        .bind(created_at.to_rfc3339())
+        .bind(created_at)
         .execute(&self.pool)
         .await?;
 
@@ -112,17 +107,17 @@ impl Storage for SqliteStorage {
     }
 
     async fn get_user(&self, id: Uuid) -> Result<Option<User>> {
-        let row = sqlx::query("SELECT id, username, password_hash, created_at FROM users WHERE id = ?")
-            .bind(id.to_string())
+        let row = sqlx::query("SELECT id, username, password_hash, created_at FROM users WHERE id = $1")
+            .bind(id)
             .fetch_optional(&self.pool)
             .await?;
 
         if let Some(row) = row {
             Ok(Some(User {
-                id: Uuid::parse_str(row.get("id"))?,
+                id: row.get("id"),
                 username: row.get("username"),
                 password_hash: row.get("password_hash"),
-                created_at: DateTime::parse_from_rfc3339(row.get("created_at"))?.with_timezone(&Utc),
+                created_at: row.get("created_at"),
             }))
         } else {
             Ok(None)
@@ -130,17 +125,17 @@ impl Storage for SqliteStorage {
     }
 
     async fn get_user_by_username(&self, username: &str) -> Result<Option<User>> {
-        let row = sqlx::query("SELECT id, username, password_hash, created_at FROM users WHERE username = ?")
+        let row = sqlx::query("SELECT id, username, password_hash, created_at FROM users WHERE username = $1")
             .bind(username)
             .fetch_optional(&self.pool)
             .await?;
 
         if let Some(row) = row {
             Ok(Some(User {
-                id: Uuid::parse_str(row.get("id"))?,
+                id: row.get("id"),
                 username: row.get("username"),
                 password_hash: row.get("password_hash"),
-                created_at: DateTime::parse_from_rfc3339(row.get("created_at"))?.with_timezone(&Utc),
+                created_at: row.get("created_at"),
             }))
         } else {
             Ok(None)
@@ -153,11 +148,11 @@ impl Storage for SqliteStorage {
         let created_at = Utc::now();
         
         sqlx::query(
-            "INSERT INTO teams (id, name, created_at) VALUES (?, ?, ?)"
+            "INSERT INTO teams (id, name, created_at) VALUES ($1, $2, $3)"
         )
-        .bind(id.to_string())
+        .bind(id)
         .bind(name)
-        .bind(created_at.to_rfc3339())
+        .bind(created_at)
         .execute(&self.pool)
         .await?;
 
@@ -169,16 +164,16 @@ impl Storage for SqliteStorage {
     }
 
     async fn get_team(&self, id: Uuid) -> Result<Option<Team>> {
-        let row = sqlx::query("SELECT id, name, created_at FROM teams WHERE id = ?")
-            .bind(id.to_string())
+        let row = sqlx::query("SELECT id, name, created_at FROM teams WHERE id = $1")
+            .bind(id)
             .fetch_optional(&self.pool)
             .await?;
 
         if let Some(row) = row {
             Ok(Some(Team {
-                id: Uuid::parse_str(row.get("id"))?,
+                id: row.get("id"),
                 name: row.get("name"),
-                created_at: DateTime::parse_from_rfc3339(row.get("created_at"))?.with_timezone(&Utc),
+                created_at: row.get("created_at"),
             }))
         } else {
             Ok(None)
@@ -186,16 +181,16 @@ impl Storage for SqliteStorage {
     }
 
     async fn get_team_by_name(&self, name: &str) -> Result<Option<Team>> {
-        let row = sqlx::query("SELECT id, name, created_at FROM teams WHERE name = ?")
+        let row = sqlx::query("SELECT id, name, created_at FROM teams WHERE name = $1")
             .bind(name)
             .fetch_optional(&self.pool)
             .await?;
 
         if let Some(row) = row {
             Ok(Some(Team {
-                id: Uuid::parse_str(row.get("id"))?,
+                id: row.get("id"),
                 name: row.get("name"),
-                created_at: DateTime::parse_from_rfc3339(row.get("created_at"))?.with_timezone(&Utc),
+                created_at: row.get("created_at"),
             }))
         } else {
             Ok(None)
@@ -207,18 +202,18 @@ impl Storage for SqliteStorage {
             "SELECT t.id, t.name, t.created_at, tm.role 
              FROM teams t 
              JOIN team_members tm ON t.id = tm.team_id 
-             WHERE tm.user_id = ?"
+             WHERE tm.user_id = $1"
         )
-        .bind(user_id.to_string())
+        .bind(user_id)
         .fetch_all(&self.pool)
         .await?;
 
         let mut results = Vec::new();
         for row in rows {
             let team = Team {
-                id: Uuid::parse_str(row.get("id"))?,
+                id: row.get("id"),
                 name: row.get("name"),
-                created_at: DateTime::parse_from_rfc3339(row.get("created_at"))?.with_timezone(&Utc),
+                created_at: row.get("created_at"),
             };
             let role_str: String = row.get("role");
             let role = Role::from_str(&role_str).ok_or_else(|| anyhow!("Invalid role string in DB"))?;
@@ -231,20 +226,20 @@ impl Storage for SqliteStorage {
     async fn add_team_member(&self, team_id: Uuid, user_id: Uuid, role: Role) -> Result<()> {
         let joined_at = Utc::now();
         sqlx::query(
-            "INSERT INTO team_members (user_id, team_id, role, joined_at) VALUES (?, ?, ?, ?)"
+            "INSERT INTO team_members (user_id, team_id, role, joined_at) VALUES ($1, $2, $3, $4)"
         )
-        .bind(user_id.to_string())
-        .bind(team_id.to_string())
+        .bind(user_id)
+        .bind(team_id)
         .bind(role.as_str())
-        .bind(joined_at.to_rfc3339())
+        .bind(joined_at)
         .execute(&self.pool)
         .await?;
         Ok(())
     }
 
     async fn get_team_members(&self, team_id: Uuid) -> Result<Vec<TeamMember>> {
-        let rows = sqlx::query("SELECT user_id, team_id, role, joined_at FROM team_members WHERE team_id = ?")
-            .bind(team_id.to_string())
+        let rows = sqlx::query("SELECT user_id, team_id, role, joined_at FROM team_members WHERE team_id = $1")
+            .bind(team_id)
             .fetch_all(&self.pool)
             .await?;
 
@@ -252,10 +247,10 @@ impl Storage for SqliteStorage {
         for row in rows {
             let role_str: String = row.get("role");
             members.push(TeamMember {
-                user_id: Uuid::parse_str(row.get("user_id"))?,
-                team_id: Uuid::parse_str(row.get("team_id"))?,
+                user_id: row.get("user_id"),
+                team_id: row.get("team_id"),
                 role: Role::from_str(&role_str).ok_or_else(|| anyhow!("Invalid role string in DB"))?,
-                joined_at: DateTime::parse_from_rfc3339(row.get("joined_at"))?.with_timezone(&Utc),
+                joined_at: row.get("joined_at"),
             });
         }
         Ok(members)
@@ -264,33 +259,32 @@ impl Storage for SqliteStorage {
     // Workflow
     async fn save_workflow(&self, workflow: &WorkflowEntity) -> Result<()> {
         sqlx::query(
-            "INSERT INTO workflows (id, account_id, name, definition, created_at) VALUES (?, ?, ?, ?, ?)
+            "INSERT INTO workflows (id, account_id, name, definition, created_at) VALUES ($1, $2, $3, $4, $5)
              ON CONFLICT(id) DO UPDATE SET name=excluded.name, definition=excluded.definition"
         )
-        .bind(workflow.id.to_string())
-        .bind(workflow.account_id.to_string())
+        .bind(workflow.id)
+        .bind(workflow.account_id)
         .bind(&workflow.name)
-        .bind(serde_json::to_string(&workflow.definition)?)
-        .bind(workflow.created_at.to_rfc3339())
+        .bind(&workflow.definition) // JSONB
+        .bind(workflow.created_at)
         .execute(&self.pool)
         .await?;
         Ok(())
     }
 
     async fn get_workflow(&self, id: Uuid) -> Result<Option<WorkflowEntity>> {
-        let row = sqlx::query("SELECT id, account_id, name, definition, created_at FROM workflows WHERE id = ?")
-            .bind(id.to_string())
+        let row = sqlx::query("SELECT id, account_id, name, definition, created_at FROM workflows WHERE id = $1")
+            .bind(id)
             .fetch_optional(&self.pool)
             .await?;
 
         if let Some(row) = row {
-            let def_str: String = row.get("definition");
             Ok(Some(WorkflowEntity {
-                id: Uuid::parse_str(row.get("id"))?,
-                account_id: Uuid::parse_str(row.get("account_id"))?,
+                id: row.get("id"),
+                account_id: row.get("account_id"),
                 name: row.get("name"),
-                definition: serde_json::from_str(&def_str)?,
-                created_at: DateTime::parse_from_rfc3339(row.get("created_at"))?.with_timezone(&Utc),
+                definition: row.get("definition"), // JSONB
+                created_at: row.get("created_at"),
             }))
         } else {
             Ok(None)
@@ -298,65 +292,65 @@ impl Storage for SqliteStorage {
     }
 
     async fn list_workflows(&self, team_id: Uuid) -> Result<Vec<WorkflowEntity>> {
-        let rows = sqlx::query("SELECT id, account_id, name, definition, created_at FROM workflows WHERE account_id = ?")
-            .bind(team_id.to_string())
+        let rows = sqlx::query("SELECT id, account_id, name, definition, created_at FROM workflows WHERE account_id = $1")
+            .bind(team_id)
             .fetch_all(&self.pool)
             .await?;
 
         let mut workflows = Vec::new();
         for row in rows {
-            let def_str: String = row.get("definition");
             workflows.push(WorkflowEntity {
-                id: Uuid::parse_str(row.get("id"))?,
-                account_id: Uuid::parse_str(row.get("account_id"))?,
+                id: row.get("id"),
+                account_id: row.get("account_id"),
                 name: row.get("name"),
-                definition: serde_json::from_str(&def_str)?,
-                created_at: DateTime::parse_from_rfc3339(row.get("created_at"))?.with_timezone(&Utc),
+                definition: row.get("definition"),
+                created_at: row.get("created_at"),
             });
         }
         Ok(workflows)
     }
 
+    // Key-Value
     async fn set_kv(&self, key: &str, value: &Value) -> Result<()> {
         sqlx::query(
-            "INSERT INTO key_value (key, value) VALUES (?, ?)
+            "INSERT INTO key_value (key, value) VALUES ($1, $2)
              ON CONFLICT(key) DO UPDATE SET value=excluded.value"
         )
         .bind(key)
-        .bind(serde_json::to_string(value)?)
+        .bind(value)
         .execute(&self.pool)
         .await?;
         Ok(())
     }
 
     async fn get_kv(&self, key: &str) -> Result<Option<Value>> {
-        let row = sqlx::query("SELECT value FROM key_value WHERE key = ?")
+        let row = sqlx::query("SELECT value FROM key_value WHERE key = $1")
             .bind(key)
             .fetch_optional(&self.pool)
             .await?;
 
         if let Some(row) = row {
-            let val_str: String = row.get("value");
-            Ok(Some(serde_json::from_str(&val_str)?))
+            Ok(Some(row.get("value")))
         } else {
             Ok(None)
         }
     }
 
+    // Credentials
     async fn create_credential(&self, name: &str, credential_type: &str, data: &str, team_id: Uuid) -> Result<Credential> {
         let id = Uuid::new_v4();
         let created_at = Utc::now();
         let encrypted_data = super::encryption::encrypt(data)?;
 
         sqlx::query(
-            "INSERT INTO credentials (id, account_id, name, type, data, created_at) VALUES (?, ?, ?, ?, ?, ?)"
+            "INSERT INTO credentials (id, account_id, name, type, data, created_at) VALUES ($1, $2, $3, $4, $5, $6)"
         )
-        .bind(id.to_string())
-        .bind(team_id.to_string())
+        .bind(id)
+        .bind(team_id)
         .bind(name)
         .bind(credential_type)
         .bind(&encrypted_data)
-        .bind(created_at.to_rfc3339())
+        .bind(created_at)
         .execute(&self.pool)
         .await?;
 
@@ -371,19 +365,19 @@ impl Storage for SqliteStorage {
     }
 
     async fn get_credential(&self, id: Uuid) -> Result<Option<Credential>> {
-        let row = sqlx::query("SELECT id, account_id, name, type, data, created_at FROM credentials WHERE id = ?")
-            .bind(id.to_string())
+        let row = sqlx::query("SELECT id, account_id, name, type, data, created_at FROM credentials WHERE id = $1")
+            .bind(id)
             .fetch_optional(&self.pool)
             .await?;
 
         if let Some(row) = row {
             Ok(Some(Credential {
-                id: Uuid::parse_str(row.get("id"))?,
-                account_id: Uuid::parse_str(row.get("account_id"))?,
+                id: row.get("id"),
+                account_id: row.get("account_id"),
                 name: row.get("name"),
                 credential_type: row.get("type"),
                 data: row.get("data"),
-                created_at: DateTime::parse_from_rfc3339(row.get("created_at"))?.with_timezone(&Utc),
+                created_at: row.get("created_at"),
             }))
         } else {
             Ok(None)
@@ -391,23 +385,22 @@ impl Storage for SqliteStorage {
     }
 
     async fn list_credentials(&self, team_id: Uuid) -> Result<Vec<Credential>> {
-        let rows = sqlx::query("SELECT id, account_id, name, type, data, created_at FROM credentials WHERE account_id = ?")
-            .bind(team_id.to_string())
+        let rows = sqlx::query("SELECT id, account_id, name, type, data, created_at FROM credentials WHERE account_id = $1")
+            .bind(team_id)
             .fetch_all(&self.pool)
             .await?;
 
         let mut creds = Vec::new();
         for row in rows {
             creds.push(Credential {
-                id: Uuid::parse_str(row.get("id"))?,
-                account_id: Uuid::parse_str(row.get("account_id"))?,
+                id: row.get("id"),
+                account_id: row.get("account_id"),
                 name: row.get("name"),
                 credential_type: row.get("type"),
                 data: row.get("data"),
-                created_at: DateTime::parse_from_rfc3339(row.get("created_at"))?.with_timezone(&Utc),
+                created_at: row.get("created_at"),
             });
         }
         Ok(creds)
     }
 }
-

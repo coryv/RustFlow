@@ -1,0 +1,15 @@
+name: TestError
+credentials: []
+nodes:
+  - name: FlakyAction
+    type: action
+    outputs:
+      - name: success
+      - name: error
+    implementation:
+      type: http
+      method: GET
+      url: "http://localhost:12345/fail"
+      retry_count: 3
+      retry_delay_ms: 100
+      transform: "results"

@@ -11,6 +11,12 @@ pub struct NodeFactory {
     creators: HashMap<String, NodeCreator>,
 }
 
+impl Default for NodeFactory {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl NodeFactory {
     pub fn new() -> Self {
         let mut factory = Self {
@@ -33,21 +39,8 @@ impl NodeFactory {
         }
 
         // Fallback for integrations
-        // We assume integration nodes are named like "slack_post_message"
-        // But the registry might not know them all upfront if they are dynamic.
-        // However, schema.rs mapped "slack_post_message" to ("Slack", "Post Message").
-        // We can try to infer or just hardcode the known ones in register_defaults.
-        // Or we can check if it matches a pattern.
-        
-        // For now, let's try to handle known integrations in register_defaults or here.
-        // If we want a generic fallback:
-        if type_name == "slack_post_message" {
-             return integrations::create_integration_node("Slack", "Post Message")
-                .ok_or_else(|| anyhow!("Integration node Slack/Post Message not found"));
-        }
-        if type_name == "notion_create_page" {
-             return integrations::create_integration_node("Notion", "Create Page")
-                .ok_or_else(|| anyhow!("Integration node Notion/Create Page not found"));
+        if let Some(node) = integrations::create_node_by_id(type_name) {
+            return Ok(node);
         }
 
         Err(anyhow!("Unknown node type: {}", type_name))
@@ -61,7 +54,8 @@ impl NodeFactory {
         self.register("router", |config, _| {
             let key = config.get("key").and_then(|v| v.as_str()).unwrap_or("id");
             let value = config.get("value").cloned().unwrap_or(Value::Null);
-            Ok(Box::new(nodes::RouterNode::new(key.to_string(), value)))
+            let operator = config.get("operator").and_then(|v| v.as_str()).unwrap_or("==").to_string();
+            Ok(Box::new(nodes::RouterNode::new(key.to_string(), value, operator)))
         });
 
         self.register("join", |config, _| {
@@ -122,7 +116,10 @@ impl NodeFactory {
             }
 
             let body = config.get("body").cloned();
-            Ok(Box::new(nodes::HttpRequestNode::new(method, url, headers, body)))
+            let retry_count = config.get("retry_count").and_then(|v| v.as_u64()).unwrap_or(0) as u32;
+            let retry_delay_ms = config.get("retry_delay_ms").and_then(|v| v.as_u64()).unwrap_or(0);
+            
+            Ok(Box::new(nodes::HttpRequestNode::new(method, url, headers, body, retry_count, retry_delay_ms)))
         });
 
         self.register("time_trigger", |config, _| {
@@ -164,6 +161,15 @@ impl NodeFactory {
         self.register("dedupe", |config, _| {
             let key = config.get("key").and_then(|v| v.as_str()).map(|s| s.to_string());
             Ok(Box::new(nodes::DedupeNode::new(key)))
+        });
+
+        self.register("split", |config, _| {
+            let path = config.get("path").and_then(|v| v.as_str()).map(|s| s.to_string());
+            Ok(Box::new(nodes::SplitNode::new(path)))
+        });
+
+        self.register("accumulate", |_, _| {
+            Ok(Box::new(nodes::AccumulateNode::new()))
         });
 
         self.register("agent", |config, secrets| {

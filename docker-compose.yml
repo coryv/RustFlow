@@ -3,5 +3,21 @@ services:
     build: .
     ports:
       - "3000:3000"
+    environment:
+      - DATABASE_URL=postgres://rustflow:rustflow@db:5432/rustflow
+    depends_on:
+      - db
+  
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: rustflow
+      POSTGRES_PASSWORD: rustflow
+      POSTGRES_DB: rustflow
+    ports:
+      - "5432:5432"
     volumes:
-      - ./rustflow.db:/app/rustflow.db
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

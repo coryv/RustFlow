@@ -30,11 +30,19 @@ struct CredentialProperty {
 struct IntegrationNode {
     name: String,
     #[serde(rename = "type")]
+    #[allow(dead_code)]
     node_type: String,
     documentation: Option<String>,
     implementation: Implementation,
     #[serde(default)]
     properties: Vec<NodeProperty>,
+    #[serde(default)]
+    outputs: Vec<OutputDefinition>,
+}
+
+#[derive(Deserialize, Debug)]
+struct OutputDefinition {
+    name: String,
 }
 
 #[derive(Deserialize, Debug)]
@@ -64,6 +72,11 @@ struct HttpImplementation {
     url: String,
     headers: Option<HashMap<String, String>>,
     body: Option<Value>,
+    transform: Option<String>,
+    #[serde(default)]
+    retry_count: u32,
+    #[serde(default)]
+    retry_delay_ms: u64,
 }
 
 #[derive(Deserialize, Debug)]
@@ -88,6 +101,7 @@ fn main() -> anyhow::Result<()> {
 
     let mut integration_modules = Vec::new();
     let mut match_arms = Vec::new();
+    let mut id_match_arms = Vec::new();
     let mut node_definitions = Vec::new();
     let mut integration_definitions = Vec::new();
 
@@ -107,12 +121,25 @@ fn main() -> anyhow::Result<()> {
                 let node_name_pascal = node.name.to_pascal_case();
                 let struct_name = format_ident!("{}{}", integration_name.to_pascal_case(), node_name_pascal);
                 
+                // Map output names to indices
+                let mut output_map = HashMap::new();
+                for (i, out) in node.outputs.iter().enumerate() {
+                    output_map.insert(out.name.clone(), i);
+                }
+                
+                // Default output index is 0 if no named outputs, or if "success" exists use that, else 0.
+                let success_idx = output_map.get("success").copied().unwrap_or(0);
+                let error_idx = output_map.get("error").copied();
+                
                 // --- Implementation Generation ---
                 match &node.implementation {
                     Implementation::Http(http) => {
                         let method = &http.method;
                         let url = &http.url;
                         let headers = http.headers.clone().unwrap_or_default();
+                        let transform = &http.transform;
+                        let retry_count = http.retry_count;
+                        let retry_delay_ms = http.retry_delay_ms;
                         
                         let body_template = match &http.body {
                             Some(Value::String(s)) => Some(s.clone()),
@@ -138,10 +165,46 @@ fn main() -> anyhow::Result<()> {
                         } else {
                             quote! {}
                         };
+                        
+                        let transform_logic = if let Some(expr) = transform {
+                            quote! {
+                                let output_payload = {
+                                    let expr = jmespath::compile(#expr).map_err(|e| anyhow::anyhow!("Invalid JMESPath transform: {}", e))?;
+                                    let transformed = expr.search(&body_json).map_err(|e| anyhow::anyhow!("JMESPath search failed: {}", e))?;
+                                    serde_json::to_value(&*transformed)?
+                                };
+                            }
+                        } else {
+                            quote! {
+                                let output_payload = body_json;
+                            }
+                        };
+                        
+                        let error_handling = if let Some(idx) = error_idx {
+                            quote! {
+                                if let Some(tx) = outputs.get(#idx) {
+                                    let error_payload = serde_json::json!({
+                                        "error": e.to_string(),
+                                        "input": data
+                                    });
+                                    let _ = tx.send(error_payload).await;
+                                }
+                            }
+                        } else {
+                            quote! {
+                                eprintln!("Request failed: {}", e);
+                            }
+                        };
 
                         node_structs.push(quote! {
                             pub struct #struct_name {
                                 client: reqwest::Client,
+                            }
+
+                            impl Default for #struct_name {
+                                fn default() -> Self {
+                                    Self::new()
+                                }
                             }
 
                             impl #struct_name {
@@ -156,21 +219,30 @@ fn main() -> anyhow::Result<()> {
                             impl crate::stream_engine::StreamNode for #struct_name {
                                 async fn run(
                                     &self,
-                                    mut inputs: Vec<tokio::sync::mpsc::Receiver<serde_json::Value>>,
+                                    #[allow(unused_mut)]
+                                    mut _inputs: Vec<tokio::sync::mpsc::Receiver<serde_json::Value>>,
                                     outputs: Vec<tokio::sync::mpsc::Sender<serde_json::Value>>,
                                 ) -> anyhow::Result<()> {
                                     let env = minijinja::Environment::new();
 
-                                    if let Some(rx) = inputs.get_mut(0) {
-                                        if let Some(tx) = outputs.get(0) {
-                                            while let Some(data) = rx.recv().await {
-                                                let url_template = #url;
-                                                let url = env.render_str(url_template, &data)
-                                                    .map_err(|e| anyhow::anyhow!("Failed to render URL template: {}", e))?;
+                                    if let Some(rx) = _inputs.get_mut(0) {
+                                        // We don't just take first output anymore, we use indices
+                                        while let Some(data) = rx.recv().await {
+                                            let url_template = #url;
+                                            let url = env.render_str(url_template, &data)
+                                                .map_err(|e| anyhow::anyhow!("Failed to render URL template: {}", e))?;
 
-                                                let mut headers = std::collections::HashMap::new();
-                                                #(#headers_iter)*
-                                                
+                                            let mut headers: std::collections::HashMap<String, String> = std::collections::HashMap::new();
+                                            #(#headers_iter)*
+                                            
+                                            let mut attempts = 0;
+                                            let max_attempts = #retry_count + 1;
+                                            let mut last_error: Option<String> = None;
+                                            let mut success = false;
+
+                                            while attempts < max_attempts {
+                                                attempts += 1;
+
                                                 let mut req_builder = match #method {
                                                     "GET" => self.client.get(&url),
                                                     "POST" => self.client.post(&url),
@@ -180,8 +252,8 @@ fn main() -> anyhow::Result<()> {
                                                     _ => self.client.get(&url),
                                                 };
 
-                                                for (k, v) in headers {
-                                                    let v_rendered = env.render_str(&v, &data)
+                                                for (k, v) in &headers {
+                                                    let v_rendered = env.render_str(v, &data)
                                                         .map_err(|e| anyhow::anyhow!("Failed to render header {}: {}", k, e))?;
                                                     req_builder = req_builder.header(k, v_rendered);
                                                 }
@@ -191,25 +263,43 @@ fn main() -> anyhow::Result<()> {
                                                 match req_builder.send().await {
                                                     Ok(resp) => {
                                                         let status = resp.status().as_u16();
-                                                        let body_bytes = resp.bytes().await.unwrap_or_default();
-                                                        let body_json: serde_json::Value = serde_json::from_slice(&body_bytes)
-                                                            .unwrap_or_else(|_| serde_json::Value::String(String::from_utf8_lossy(&body_bytes).to_string()));
+                                                        if resp.status().is_success() {
+                                                            let body_bytes = resp.bytes().await.unwrap_or_default();
+                                                            let body_json: serde_json::Value = serde_json::from_slice(&body_bytes)
+                                                                .unwrap_or_else(|_| serde_json::Value::String(String::from_utf8_lossy(&body_bytes).to_string()));
 
-                                                        let output = serde_json::json!({
-                                                            "status": status,
-                                                            "body": body_json,
-                                                            "original_input": data
-                                                        });
-                                                        
-                                                        if let Err(e) = tx.send(output).await {
-                                                            eprintln!("Failed to send output: {}", e);
-                                                            break;
+                                                            #transform_logic
+
+                                                            if let Some(tx) = outputs.get(#success_idx) {
+                                                                if let Err(e) = tx.send(output_payload).await {
+                                                                    eprintln!("Failed to send output: {}", e);
+                                                                    break;
+                                                                }
+                                                            }
+                                                            success = true;
+                                                            break; // Success
+                                                        } else {
+                                                            // Handle HTTP error
+                                                            let e = anyhow::anyhow!("HTTP Error: {}", status);
+                                                            last_error = Some(e.to_string());
                                                         }
                                                     }
                                                     Err(e) => {
-                                                        eprintln!("Request failed: {}", e);
+                                                        last_error = Some(e.to_string());
                                                     }
                                                 }
+
+                                                if attempts < max_attempts {
+                                                    let delay = #retry_delay_ms;
+                                                    if delay > 0 {
+                                                        tokio::time::sleep(tokio::time::Duration::from_millis(delay)).await;
+                                                    }
+                                                }
+                                            }
+
+                                            if !success {
+                                                let e = anyhow::anyhow!("{}", last_error.unwrap_or_else(|| "Unknown error".to_string()));
+                                                #error_handling
                                             }
                                         }
                                     }
@@ -219,7 +309,8 @@ fn main() -> anyhow::Result<()> {
                         });
                     }
                     Implementation::Polling(polling) => {
-                        let interval_str = &polling.interval;
+                        // Polling implementation update (simplified for now, assumes single output or success)
+                         let interval_str = &polling.interval;
                         let interval_ms: u64 = if interval_str.ends_with('s') {
                             interval_str.trim_end_matches('s').parse::<u64>().unwrap_or(60) * 1000
                         } else if interval_str.ends_with("ms") {
@@ -234,6 +325,7 @@ fn main() -> anyhow::Result<()> {
                         let headers = http.headers.clone().unwrap_or_default();
                         let items_path = polling.items_path.clone();
                         let dedupe_key = polling.dedupe_key.clone();
+                        let transform = &http.transform;
 
                         let body_template = match &http.body {
                             Some(Value::String(s)) => Some(s.clone()),
@@ -263,7 +355,11 @@ fn main() -> anyhow::Result<()> {
 
                         let items_extraction = if let Some(path) = items_path {
                             quote! {
-                                let items: Vec<serde_json::Value> = body_json.get(#path).and_then(|v| v.as_array()).cloned().unwrap_or_default();
+                                let items: Vec<serde_json::Value> = {
+                                    let expr = jmespath::compile(#path).map_err(|e| anyhow::anyhow!("Invalid JMESPath items_path: {}", e))?;
+                                    let result = expr.search(&body_json).map_err(|e| anyhow::anyhow!("JMESPath search failed: {}", e))?;
+                                    result.as_array().map(|arr| arr.iter().map(|v| serde_json::to_value(v).unwrap_or(serde_json::Value::Null)).collect()).unwrap_or_default()
+                                };
                             }
                         } else {
                             quote! {
@@ -288,10 +384,30 @@ fn main() -> anyhow::Result<()> {
                         } else {
                             quote! {}
                         };
+                        
+                        let transform_logic = if let Some(expr) = transform {
+                            quote! {
+                                let output_payload = {
+                                    let expr = jmespath::compile(#expr).map_err(|e| anyhow::anyhow!("Invalid JMESPath transform: {}", e))?;
+                                    let transformed = expr.search(&item).map_err(|e| anyhow::anyhow!("JMESPath search failed: {}", e))?;
+                                    serde_json::to_value(&*transformed)?
+                                };
+                            }
+                        } else {
+                            quote! {
+                                let output_payload = item;
+                            }
+                        };
 
                         node_structs.push(quote! {
                             pub struct #struct_name {
                                 client: reqwest::Client,
+                            }
+
+                            impl Default for #struct_name {
+                                fn default() -> Self {
+                                    Self::new()
+                                }
                             }
 
                             impl #struct_name {
@@ -306,14 +422,16 @@ fn main() -> anyhow::Result<()> {
                             impl crate::stream_engine::StreamNode for #struct_name {
                                 async fn run(
                                     &self,
-                                    mut inputs: Vec<tokio::sync::mpsc::Receiver<serde_json::Value>>,
+                                    #[allow(unused_mut)]
+                                    #[allow(clippy::possible_missing_else)]
+                                    mut _inputs: Vec<tokio::sync::mpsc::Receiver<serde_json::Value>>,
                                     outputs: Vec<tokio::sync::mpsc::Sender<serde_json::Value>>,
                                 ) -> anyhow::Result<()> {
                                     let mut seen_ids: std::collections::HashSet<String> = std::collections::HashSet::new();
                                     let env: minijinja::Environment = minijinja::Environment::new();
                                     let mut interval = tokio::time::interval(tokio::time::Duration::from_millis(#interval_ms));
 
-                                    if let Some(tx) = outputs.get(0) {
+                                    if let Some(tx) = outputs.first() {
                                         loop {
                                             interval.tick().await;
 
@@ -343,14 +461,21 @@ fn main() -> anyhow::Result<()> {
                                             match req_builder.send().await {
                                                 Ok(resp) => {
                                                     let body_bytes = resp.bytes().await.unwrap_or_default();
+                                                    println!("Polling Debug: Raw Body: {}", String::from_utf8_lossy(&body_bytes));
                                                     let body_json: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap_or(serde_json::Value::Null);
+                                                    println!("Polling Debug: Body: {:?}", body_json);
 
                                                     #items_extraction
+                                                    println!("Polling Debug: Extracted {} items", items.len());
 
                                                     for item in items {
-                                                        #dedupe_logic
+                                                        {
+                                                            #dedupe_logic
+                                                        }
                                                         
-                                                        if let Err(e) = tx.send(item).await {
+                                                        #transform_logic
+                                                        
+                                                        if let Err(e) = tx.send(output_payload).await {
                                                             eprintln!("Failed to send output: {}", e);
                                                             return Ok(());
                                                         }
@@ -375,8 +500,10 @@ fn main() -> anyhow::Result<()> {
                     (#integration_name, #node_name) => Some(Box::new(#module_name::#struct_name::new())),
                 });
 
-                // --- NodeType Definition ---
                 let node_id = format!("{}_{}", integration_name.to_snake_case(), node.name.to_snake_case());
+                id_match_arms.push(quote! {
+                    #node_id => Some(Box::new(#module_name::#struct_name::new())),
+                });
                 let label = format!("{}: {}", integration_name, node.name);
                 let category = "Integration";
                 let description = format!("{} integration", integration_name);
@@ -415,6 +542,11 @@ fn main() -> anyhow::Result<()> {
                         }
                     });
                 }
+                
+                let outputs_code = node.outputs.iter().map(|o| {
+                    let name = &o.name;
+                    quote! { #name.to_string() }
+                });
 
                 node_definitions.push(quote! {
                     crate::node_registry::NodeType {
@@ -424,12 +556,14 @@ fn main() -> anyhow::Result<()> {
                         description: Some(#description.to_string()),
                         documentation: #documentation,
                         properties: vec![#(#properties_code),*],
+                        outputs: vec![#(#outputs_code),*],
                     }
                 });
             }
 
             integration_modules.push(quote! {
                 pub mod #module_name {
+                    #[allow(unused_imports)]
                     use super::*;
                     #(#node_structs)*
                 }
@@ -475,6 +609,13 @@ fn main() -> anyhow::Result<()> {
         pub fn create_integration_node(integration: &str, node: &str) -> Option<Box<dyn crate::stream_engine::StreamNode>> {
             match (integration, node) {
                 #(#match_arms)*
+                _ => None,
+            }
+        }
+
+        pub fn create_node_by_id(id: &str) -> Option<Box<dyn crate::stream_engine::StreamNode>> {
+            match id {
+                #(#id_match_arms)*
                 _ => None,
             }
         }

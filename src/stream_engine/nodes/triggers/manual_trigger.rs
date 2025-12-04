@@ -10,7 +10,7 @@ pub struct ManualTrigger;
 impl StreamNode for ManualTrigger {
     async fn run(&self, _inputs: Vec<Receiver<Value>>, outputs: Vec<Sender<Value>>) -> Result<()> {
         // Send one message to the first output and finish
-        if let Some(tx) = outputs.get(0) {
+        if let Some(tx) = outputs.first() {
             tx.send(json!(null)).await?;
         }
         Ok(())

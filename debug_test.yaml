@@ -1,0 +1,13 @@
+nodes:
+  - id: "source"
+    type: "file_source"
+    config:
+      path: "test_data.json"
+
+  - id: "console"
+    type: "console_output"
+    config: {}
+
+edges:
+  - from: "source"
+    to: "console"

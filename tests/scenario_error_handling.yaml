@@ -1,0 +1,39 @@
+name: ScenarioErrorHandling
+nodes:
+  - id: trigger
+    type: manual_trigger
+    config: {}
+
+  - id: action_1
+    type: test_error_flaky_action
+    config: {}
+
+  - id: delay
+    type: delay
+    config:
+      duration_ms: 1000
+
+  - id: action_2
+    type: test_error_flaky_action
+    config: {}
+
+  - id: log_failure
+    type: console_output
+    config: {}
+
+edges:
+  - from: trigger
+    to: action_1
+  
+  # Connect 'error' output (index 1) to delay
+  - from: action_1
+    from_port: "1" # Index 1 for error
+    to: delay
+
+  - from: delay
+    to: action_2
+
+  # Connect 'error' output of retry to log
+  - from: action_2
+    from_port: "1"
+    to: log_failure

@@ -20,7 +20,7 @@ impl TimeTrigger {
 #[async_trait]
 impl StreamNode for TimeTrigger {
     async fn run(&self, _inputs: Vec<Receiver<Value>>, outputs: Vec<Sender<Value>>) -> Result<()> {
-        if let Some(tx) = outputs.get(0) {
+        if let Some(tx) = outputs.first() {
             let mut ticker = interval(Duration::from_secs(self.interval_seconds));
 
             // Loop forever (or until channel closed)

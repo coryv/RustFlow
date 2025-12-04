@@ -1,0 +1,16 @@
+name: TestPolling
+credentials: []
+nodes:
+  - name: GetSlides
+    type: trigger # Polling is usually a trigger or source
+    outputs:
+      - name: success
+      - name: error
+    implementation:
+      type: polling
+      interval: "10s"
+      request:
+        method: GET
+        url: "https://jsonplaceholder.typicode.com/posts"
+      items_path: null # Root array
+      dedupe_key: "id" # Dedupe based on id

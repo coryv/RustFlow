@@ -22,7 +22,7 @@ impl UnionNode {
 #[async_trait]
 impl StreamNode for UnionNode {
     async fn run(&self, inputs: Vec<Receiver<Value>>, outputs: Vec<Sender<Value>>) -> Result<()> {
-        if let Some(tx) = outputs.get(0) {
+        if let Some(tx) = outputs.first() {
             match self.mode {
                 UnionMode::Interleaved => {
                     // Use tokio::select! in a loop over all inputs?

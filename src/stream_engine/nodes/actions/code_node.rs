@@ -59,7 +59,7 @@ impl CodeNode {
             // RustPython has serde support but it might need a feature flag or manual conversion.
             // For MVP, let's convert via JSON string if possible, or manual recursion.
             // Manual recursion is safer/cleaner for now.
-            let input_py = self.json_to_py(vm, &input);
+            let input_py = Self::json_to_py(vm, &input);
             
             scope.locals.set_item("input", input_py, vm)
                 .map_err(|e| anyhow!("Failed to set input: {:?}", e))?;
@@ -77,12 +77,12 @@ impl CodeNode {
                 .map_err(|_| anyhow!("Failed to get 'output' variable"))?;
 
             // Convert back to JSON
-            let output_json = self.py_to_json(vm, output_py)?;
+            let output_json = Self::py_to_json(vm, output_py)?;
             Ok(output_json)
         })
     }
 
-    fn json_to_py(&self, vm: &vm::VirtualMachine, val: &Value) -> PyObjectRef {
+    fn json_to_py(vm: &vm::VirtualMachine, val: &Value) -> PyObjectRef {
         match val {
             Value::Null => vm.ctx.none(),
             Value::Bool(b) => vm.ctx.new_bool(*b).into(),
@@ -97,20 +97,20 @@ impl CodeNode {
             }
             Value::String(s) => vm.ctx.new_str(s.as_str()).into(),
             Value::Array(arr) => {
-                let elements: Vec<PyObjectRef> = arr.iter().map(|v| self.json_to_py(vm, v)).collect();
+                let elements: Vec<PyObjectRef> = arr.iter().map(|v| Self::json_to_py(vm, v)).collect();
                 vm.ctx.new_list(elements).into()
             }
             Value::Object(obj) => {
                 let dict = vm.ctx.new_dict();
                 for (k, v) in obj {
-                    let _ = dict.set_item(k.as_str(), self.json_to_py(vm, v), vm);
+                    let _ = dict.set_item(k.as_str(), Self::json_to_py(vm, v), vm);
                 }
                 dict.into()
             }
         }
     }
 
-    fn py_to_json(&self, vm: &vm::VirtualMachine, obj: PyObjectRef) -> Result<Value> {
+    fn py_to_json(vm: &vm::VirtualMachine, obj: PyObjectRef) -> Result<Value> {
         // Basic conversion. 
         if vm.is_none(&obj) {
             return Ok(Value::Null);
@@ -132,7 +132,7 @@ impl CodeNode {
         if let Some(list) = obj.payload::<vm::builtins::PyList>() {
             let mut arr = Vec::new();
             for item in list.borrow_vec().iter() {
-                arr.push(self.py_to_json(vm, item.clone())?);
+                arr.push(Self::py_to_json(vm, item.clone())?);
             }
             return Ok(Value::Array(arr));
         }
@@ -140,7 +140,7 @@ impl CodeNode {
             let mut map = serde_json::Map::new();
             for (k, v) in dict {
                 let key_str = k.str(vm).map_err(|e| anyhow!("Failed to convert key to string: {:?}", e))?.to_string();
-                map.insert(key_str, self.py_to_json(vm, v)?);
+                map.insert(key_str, Self::py_to_json(vm, v)?);
             }
             return Ok(Value::Object(map));
         }
@@ -154,7 +154,7 @@ impl CodeNode {
 impl StreamNode for CodeNode {
     async fn run(&self, mut inputs: Vec<Receiver<Value>>, outputs: Vec<Sender<Value>>) -> Result<()> {
         if let Some(rx) = inputs.get_mut(0) {
-            if let Some(tx) = outputs.get(0) {
+            if let Some(tx) = outputs.first() {
                 while let Some(data) = rx.recv().await {
                     let result = match self.lang.as_str() {
                         "js" | "javascript" => self.run_js(data),

@@ -8,14 +8,10 @@ pub struct ConsoleOutput;
 
 #[async_trait]
 impl StreamNode for ConsoleOutput {
-    async fn run(&self, mut inputs: Vec<Receiver<Value>>, outputs: Vec<Sender<Value>>) -> Result<()> {
-        if let Some(rx) = inputs.get_mut(0) {
-            while let Some(data) = rx.recv().await {
-                println!("ConsoleOutput: {:#?}", data);
-                // Pass through if there is an output connected
-                if let Some(tx) = outputs.get(0) {
-                    tx.send(data).await?;
-                }
+    async fn run(&self, mut inputs: Vec<Receiver<Value>>, _outputs: Vec<Sender<Value>>) -> Result<()> {
+        if let Some(mut rx) = inputs.pop() {
+            while let Some(value) = rx.recv().await {
+                println!("{}", serde_json::to_string_pretty(&value)?);
             }
         }
         Ok(())

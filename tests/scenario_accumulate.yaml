@@ -1,0 +1,37 @@
+name: "Accumulate Node Test"
+nodes:
+  - id: "trigger"
+    type: "manual_trigger"
+    config: {}
+
+  - id: "generate_items"
+    type: "code"
+    config:
+      lang: "js"
+      code: |
+        output = {
+          "items": [1, 2, 3]
+        };
+
+  - id: "split_items"
+    type: "split"
+    config:
+      path: "items"
+
+  - id: "accumulate_items"
+    type: "accumulate"
+    config: {}
+
+  - id: "log_list"
+    type: "console_output"
+    config: {}
+
+edges:
+  - from: "trigger"
+    to: "generate_items"
+  - from: "generate_items"
+    to: "split_items"
+  - from: "split_items"
+    to: "accumulate_items"
+  - from: "accumulate_items"
+    to: "log_list"

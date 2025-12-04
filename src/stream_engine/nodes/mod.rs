@@ -26,6 +26,8 @@ pub use data::html_extract_node::{HtmlExtractNode, ExtractMode};
 pub use data::dedupe_node::DedupeNode;
 pub use data::group_by_node::{GroupByNode, Aggregation};
 pub use data::stats_node::StatsNode;
+pub use data::split_node::SplitNode;
+pub use data::accumulate_node::AccumulateNode;
 
 pub use ai::agent_node::AgentNode;
 

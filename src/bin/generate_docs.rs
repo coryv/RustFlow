@@ -51,6 +51,16 @@ fn main() {
                 }
                 println!();
             }
+
+            if !node.outputs.is_empty() {
+                println!("#### Outputs (Named Ports)\n");
+                println!("| Port Name | Index |");
+                println!("|-----------|-------|");
+                for (i, output) in node.outputs.iter().enumerate() {
+                    println!("| `{}` | `{}` |", output, i);
+                }
+                println!();
+            }
             println!("---\n");
         }
     }

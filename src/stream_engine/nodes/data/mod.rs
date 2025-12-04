@@ -5,3 +5,5 @@ pub mod file_source;
 pub mod dedupe_node;
 pub mod group_by_node;
 pub mod stats_node;
+pub mod split_node;
+pub mod accumulate_node;

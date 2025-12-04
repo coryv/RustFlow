@@ -11,6 +11,9 @@ nodes:
     documentation: |
       Triggers when a new page is created in the workspace.
       Polls the Notion Search API every 60 seconds.
+    outputs:
+      - name: "success"
+      - name: "error"
     implementation:
       type: "polling"
       interval: "60s"
@@ -37,6 +40,9 @@ nodes:
     documentation: |
       Triggers when a new comment is added.
       Polls the Notion Comments API every 60 seconds.
+    outputs:
+      - name: "success"
+      - name: "error"
     implementation:
       type: "polling"
       interval: "60s"
@@ -64,6 +70,9 @@ nodes:
       - **database_id**: The ID of the database to create the page in.
       - **title**: The title of the new page.
       - **summary**: A summary of the page content.
+    outputs:
+      - name: "success"
+      - name: "error"
     implementation:
       type: "http"
       method: "POST"
@@ -107,6 +116,9 @@ nodes:
       ### Properties
       - **credential_id**: The ID of the Notion credential to use.
       - **page_id**: The ID of the page to retrieve.
+    outputs:
+      - name: "success"
+      - name: "error"
     implementation:
       type: "http"
       method: "GET"
@@ -134,6 +146,9 @@ nodes:
       - **page_id**: The ID of the page to update.
       - **properties**: JSON object of properties to update.
       - **archived**: Boolean indicating whether to archive the page.
+    outputs:
+      - name: "success"
+      - name: "error"
     implementation:
       type: "http"
       method: "PATCH"
@@ -171,6 +186,9 @@ nodes:
       ### Properties
       - **credential_id**: The ID of the Notion credential to use.
       - **block_id**: The ID of the block to retrieve children for.
+    outputs:
+      - name: "success"
+      - name: "error"
     implementation:
       type: "http"
       method: "GET"
@@ -178,6 +196,7 @@ nodes:
       headers:
         Authorization: "Bearer {{ credential.token }}"
         Notion-Version: "2022-06-28"
+      transform: "results"
     properties:
       - name: "credential_id"
         label: "Credential ID"
@@ -197,6 +216,9 @@ nodes:
       - **credential_id**: The ID of the Notion credential to use.
       - **block_id**: The ID of the block to append children to.
       - **children**: JSON array of block objects to append.
+    outputs:
+      - name: "success"
+      - name: "error"
     implementation:
       type: "http"
       method: "PATCH"
@@ -231,6 +253,9 @@ nodes:
       - **database_id**: The ID of the database to query.
       - **filter**: JSON object for filtering results.
       - **sorts**: JSON array for sorting results.
+    outputs:
+      - name: "success"
+      - name: "error"
     implementation:
       type: "http"
       method: "POST"
@@ -242,6 +267,7 @@ nodes:
       body:
         filter: "{{ input.filter }}"
         sorts: "{{ input.sorts }}"
+      transform: "results"
     properties:
       - name: "credential_id"
         label: "Credential ID"
@@ -268,6 +294,9 @@ nodes:
       ### Properties
       - **credential_id**: The ID of the Notion credential to use.
       - **database_id**: The ID of the database to retrieve.
+    outputs:
+      - name: "success"
+      - name: "error"
     implementation:
       type: "http"
       method: "GET"
@@ -293,6 +322,9 @@ nodes:
       ### Properties
       - **credential_id**: The ID of the Notion credential to use.
       - **query**: The search query string.
+    outputs:
+      - name: "success"
+      - name: "error"
     implementation:
       type: "http"
       method: "POST"
@@ -305,6 +337,7 @@ nodes:
         query: "{{ input.query }}"
         filter: "{{ input.filter }}"
         sort: "{{ input.sort }}"
+      transform: "results"
     properties:
       - name: "credential_id"
         label: "Credential ID"
@@ -322,6 +355,9 @@ nodes:
 
       ### Properties
       - **credential_id**: The ID of the Notion credential to use.
+    outputs:
+      - name: "success"
+      - name: "error"
     implementation:
       type: "http"
       method: "GET"
@@ -329,6 +365,7 @@ nodes:
       headers:
         Authorization: "Bearer {{ credential.token }}"
         Notion-Version: "2022-06-28"
+      transform: "results"
     properties:
       - name: "credential_id"
         label: "Credential ID"
@@ -343,6 +380,9 @@ nodes:
       ### Properties
       - **credential_id**: The ID of the Notion credential to use.
       - **user_id**: The ID of the user to retrieve.
+    outputs:
+      - name: "success"
+      - name: "error"
     implementation:
       type: "http"
       method: "GET"

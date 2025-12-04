@@ -15,6 +15,9 @@ nodes:
       - **credential_id**: The ID of the Slack credential to use.
       - **channel**: The channel ID or name to post to.
       - **text**: The message text to post.
+    outputs:
+      - name: "success"
+      - name: "error"
     implementation:
       type: "http"
       method: "POST"

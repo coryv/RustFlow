@@ -23,7 +23,7 @@ impl StreamNode for DedupeNode {
         }
 
         let mut input = inputs.remove(0);
-        let output = outputs.get(0).unwrap();
+        let output = outputs.first().unwrap();
         
         let mut seen = HashSet::new();
 

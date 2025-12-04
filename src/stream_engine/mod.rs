@@ -3,6 +3,11 @@ use tokio::sync::mpsc::{Receiver, Sender};
 use serde_json::Value;
 use anyhow::Result;
 
+#[derive(Debug, Clone, Default)]
+pub struct DebugConfig {
+    pub limit_records: Option<usize>,
+}
+
 #[async_trait]
 pub trait StreamNode: Send + Sync {
     /// Run the node logic.

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use tokio::sync::{mpsc, broadcast};
 use tokio::task::JoinSet;
-use crate::stream_engine::StreamNode;
+use crate::stream_engine::{StreamNode, DebugConfig};
 use crate::schema::ExecutionEvent;
 use anyhow::{Result, anyhow, Context};
 use serde_json::Value;
@@ -14,14 +14,22 @@ pub struct StreamExecutor {
     // Edge: (from_id, from_port, to_id, to_port)
     edges: Vec<(String, usize, String, usize)>,
     event_sender: Option<broadcast::Sender<ExecutionEvent>>,
+    debug_config: DebugConfig,
+}
+
+impl Default for StreamExecutor {
+    fn default() -> Self {
+        Self::new(DebugConfig::default())
+    }
 }
 
 impl StreamExecutor {
-    pub fn new() -> Self {
+    pub fn new(debug_config: DebugConfig) -> Self {
         Self {
             nodes: HashMap::new(),
             edges: Vec::new(),
             event_sender: None,
+            debug_config,
         }
     }
 
@@ -61,11 +69,11 @@ impl StreamExecutor {
                 if let Some(sender) = &event_sender {
                     match &result {
                         Ok(_) => {
-                            let _ = sender.send(ExecutionEvent::NodeFinish { node_id: node_id });
+                            let _ = sender.send(ExecutionEvent::NodeFinish { node_id });
                         }
                         Err(e) => {
                             let _ = sender.send(ExecutionEvent::NodeError { 
-                                node_id: node_id, 
+                                node_id, 
                                 error: e.to_string() 
                             });
                         }
@@ -102,8 +110,10 @@ impl StreamExecutor {
             let event_sender = self.event_sender.clone();
             let from_id = from.clone();
             let to_id = to.clone();
+            let limit = self.debug_config.limit_records;
             
             tokio::spawn(async move {
+                let mut count = 0;
                 while let Some(val) = rx.recv().await {
                     // Broadcast event
                     if let Some(sender) = &event_sender {
@@ -114,9 +124,23 @@ impl StreamExecutor {
                         });
                     }
                     
-                    // Forward to destination
-                    if tap_tx.send(val).await.is_err() {
-                        break;
+                    // Forward to destination with limit check
+                    if let Some(limit_val) = limit {
+                        if count < limit_val {
+                            if tap_tx.send(val).await.is_err() {
+                                break;
+                            }
+                            count += 1;
+                        } else {
+                            // Drop excess records (drain)
+                            // We continue loop to keep upstream channel open
+                            continue; 
+                        }
+                    } else {
+                        // No limit
+                        if tap_tx.send(val).await.is_err() {
+                            break;
+                        }
                     }
                 }
             });
@@ -141,6 +165,11 @@ impl StreamExecutor {
 
     fn prepare_node_inputs(id: &str, inputs: &mut InputsMap) -> Result<Vec<mpsc::Receiver<Value>>> {
         let mut node_input_map = inputs.remove(id).ok_or_else(|| anyhow!("Node inputs not found for {}", id))?;
+        
+        if node_input_map.is_empty() {
+            return Ok(Vec::new());
+        }
+
         let max_input_port = node_input_map.keys().max().copied().unwrap_or(0);
         let mut node_inputs_vec = Vec::new();
         
@@ -195,7 +224,7 @@ impl StreamExecutor {
                 });
             } else {
                  tokio::spawn(async move {
-                    while let Some(_) = internal_rx.recv().await {}
+                    while (internal_rx.recv().await).is_some() {}
                 });
             }
             node_outputs_vec.push(internal_tx);
