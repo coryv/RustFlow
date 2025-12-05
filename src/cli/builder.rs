@@ -20,6 +20,13 @@ impl BuilderState {
         }
     }
 
+    pub fn from_definition(def: WorkflowDefinition) -> Self {
+        Self {
+            nodes: def.nodes,
+            edges: def.edges,
+        }
+    }
+
     pub async fn run(&mut self) -> Result<()> {
         let theme = ColorfulTheme::default();
         loop {
@@ -31,9 +38,11 @@ impl BuilderState {
             let choices = vec![
                 "Add Node",
                 "Connect Nodes",
-                "List Nodes", // Keep for raw detail if needed, or remove since we have status
+                "Preview Workflow", // Replaces list with graph/status
+                "Inspect Nodes", // Interactive node list
                 "Test Node",
                 "Test Workflow",
+                "Edit YAML",
                 "Save Workflow",
                 "Quit",
             ];
@@ -47,11 +56,13 @@ impl BuilderState {
             match selection {
                 0 => self.add_node()?,
                 1 => self.connect_nodes()?,
-                2 => self.list_nodes(),
-                3 => self.test_node().await?,
-                4 => self.test_workflow().await?,
-                5 => self.save_workflow()?,
-                6 => break,
+                2 => self.preview_workflow(),
+                3 => self.inspect_nodes()?,
+                4 => self.test_node().await?,
+                5 => self.test_workflow().await?,
+                6 => self.edit_yaml()?,
+                7 => self.save_workflow()?,
+                8 => break,
                 _ => unreachable!(),
             }
         }
@@ -113,6 +124,7 @@ impl BuilderState {
             id,
             node_type: node_type.id.clone(),
             config: config_value,
+            on_error: None,
         });
 
         println!("Node added!");
@@ -307,15 +319,133 @@ impl BuilderState {
         Ok(())
     }
 
-    fn list_nodes(&self) {
-        println!("Nodes:");
-        for node in &self.nodes {
-            println!("- {} ({})", node.id, node.node_type);
+    fn preview_workflow(&self) {
+        println!("{}", style("--- Workflow Preview ---").bold());
+        self.print_workflow_status();
+    }
+
+    fn inspect_nodes(&mut self) -> Result<()> {
+        let theme = ColorfulTheme::default();
+        if self.nodes.is_empty() {
+             println!("No nodes to inspect.");
+             return Ok(());
         }
-        println!("Edges:");
-        for edge in &self.edges {
-            println!("- {} -> {}", edge.from, edge.to);
+
+        loop {
+            let mut choices: Vec<String> = self.nodes.iter().map(|n| format!("{} ({})", n.id, n.node_type)).collect();
+            choices.push("Back".to_string());
+
+            let idx = Select::with_theme(&theme)
+                .with_prompt("Select Node to Inspect")
+                .items(&choices)
+                .interact()?;
+
+            if idx == choices.len() - 1 {
+                break;
+            }
+
+            // Borrow scope for display
+             {
+                let node = &self.nodes[idx];
+                println!("{}", style(format!("--- Node: {} ---", node.id)).bold());
+                println!("Type: {}", node.node_type);
+                println!("Config: {}", serde_json::to_string_pretty(&node.config).unwrap_or_default());
+             }
+            
+            // Edit options
+            let opts = vec!["Edit Configuration", "Delete Node", "Back"];
+             let opt_idx = Select::with_theme(&theme)
+                .with_prompt("Action")
+                .items(&opts)
+                .interact()?;
+            
+            match opt_idx {
+                0 => {
+                    // Clone implementation details needed for prompt to avoid holding reference
+                    let node_type = self.nodes[idx].node_type.clone();
+                    
+                    let registry = get_node_registry();
+                    if let Some(nt) = registry.iter().find(|n| n.id == node_type) {
+                        let mut new_config = HashMap::new();
+                        println!("Re-configuring node properties...");
+                        for prop in &nt.properties {
+                             // prompt_property needs self, but not &mut self.
+                             // And we are not holding &mut self reference to nodes[idx] now.
+                             let val = self.prompt_property(prop)?;
+                             if !val.is_null() {
+                                 new_config.insert(prop.name.clone(), val);
+                             }
+                        }
+                        // Now mutable borrow to update
+                        self.nodes[idx].config = serde_json::to_value(new_config)?;
+                        println!("Node updated.");
+                    } else {
+                        println!("Node type definition not found in registry.");
+                    }
+                },
+                1 => {
+                    if Confirm::with_theme(&theme).with_prompt("Are you sure you want to delete this node?").interact()? {
+                        // Needed to clone ID before mutable borrow of remove
+                        let id = self.nodes[idx].id.clone();
+                        self.nodes.remove(idx);
+                        
+                        self.edges.retain(|e| e.from != id && e.to != id);
+                        println!("Node deleted.");
+                        break;
+                    }
+                },
+                _ => {}
+            }
         }
+        Ok(())
+    }
+
+    fn edit_yaml(&mut self) -> Result<()> {
+        // Dump to temp file, open editor, read back
+        let workflow = WorkflowDefinition {
+            nodes: self.nodes.clone(),
+            edges: self.edges.clone(),
+        };
+        let yaml = serde_yaml::to_string(&workflow)?;
+        
+        // Use tempfile crate if available, or just a random file
+        // Since we don't have tempfile crate in dependencies list I recall, I'll use a local temp file.
+        let temp_path = "temp_workflow_edit.yaml";
+        fs::write(temp_path, yaml)?;
+
+        let editor = std::env::var("EDITOR").unwrap_or_else(|_| "nano".to_string());
+        println!("Opening {}...", editor);
+        
+        let status = std::process::Command::new(&editor)
+            .arg(temp_path)
+            .status()
+            .map_err(|e| anyhow::anyhow!("Failed to open editor: {}", e))?;
+
+        if status.success() {
+            let content = fs::read_to_string(temp_path)?;
+            // parse back
+            match serde_yaml::from_str::<WorkflowDefinition>(&content) {
+                Ok(def) => {
+                    self.nodes = def.nodes;
+                    self.edges = def.edges;
+                    println!("Workflow updated from YAML.");
+                },
+                Err(e) => {
+                    println!("Failed to parse YAML: {}", e);
+                    if Confirm::with_theme(&ColorfulTheme::default()).with_prompt("Discard changes?").interact()? {
+                        // ignore
+                    } else {
+                        // Loop back or keep old state? 
+                        // For now we keep old state.
+                        println!("Reverting to previous state.");
+                    }
+                }
+            }
+        } else {
+             println!("Editor exited with error.");
+        }
+        let _ = fs::remove_file(temp_path);
+        Ok(())
     }
 
     async fn test_node(&self) -> Result<()> {
@@ -364,6 +494,7 @@ impl BuilderState {
                      id: source_id.to_string(),
                      node_type: "set_data".to_string(),
                      config: serde_json::json!({ "json": input_json }),
+                     on_error: None,
                  });
                  
                  temp_edges.push(EdgeDefinition {
@@ -384,6 +515,7 @@ impl BuilderState {
             id: console_id.to_string(),
             node_type: "console_output".to_string(),
             config: serde_json::json!({}),
+            on_error: None,
         });
         
         temp_edges.push(EdgeDefinition {
@@ -535,6 +667,12 @@ impl BuilderState {
                      },
                      rust_flow::schema::ExecutionEvent::NodeError { node_id, error } => {
                          eprintln!("{} Error in {}: {}", style("x").red(), node_id, error);
+                     },
+                     rust_flow::schema::ExecutionEvent::WorkflowStart { .. } => {
+                         println!("{} Workflow Started", style("•").blue());
+                     },
+                     rust_flow::schema::ExecutionEvent::WorkflowFinish { .. } => {
+                         println!("{} Workflow Finished", style("•").green());
                      },
                  }
             }

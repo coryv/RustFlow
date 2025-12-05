@@ -5,6 +5,8 @@ use serde::{Serialize, Deserialize};
 use tokio::sync::{mpsc, broadcast};
 use crate::stream_engine::StreamExecutor;
 use crate::schema::ExecutionEvent;
+use crate::storage::Storage;
+use chrono::Utc;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum JobStatus {
@@ -27,23 +29,32 @@ pub struct Job {
 
 pub struct JobManager {
     jobs: Arc<Mutex<HashMap<String, Job>>>,
+    storage: Arc<dyn Storage>,
 }
 
-impl Default for JobManager {
-    fn default() -> Self {
-        Self::new()
-    }
-}
+// Cannot implement Default because Storage is required
+// impl Default for JobManager { ... }
 
 impl JobManager {
-    pub fn new() -> Self {
+    pub fn new(storage: Arc<dyn Storage>) -> Self {
         Self {
             jobs: Arc::new(Mutex::new(HashMap::new())),
+            storage,
         }
     }
 
     pub fn create_job(&self) -> String {
-        let id = Uuid::new_v4().to_string();
+        let id_uuid = Uuid::new_v4();
+        let id = id_uuid.to_string();
+        
+        // Persist initial Pending state
+        // We spawn this because create_job is sync currently.
+        // Ideally create_job should be async. But to minimize refactor, we spawn.
+        let storage = self.storage.clone();
+        tokio::spawn(async move {
+            let _ = storage.create_execution(id_uuid, None, "pending").await;
+        });
+
         let (tx, mut rx) = mpsc::channel(100);
         let (event_tx, _) = broadcast::channel(100);
         
@@ -91,12 +102,21 @@ impl JobManager {
     }
 
     pub async fn run_job(&self, id: String, executor: StreamExecutor) {
+        let id_uuid = Uuid::parse_str(&id).unwrap_or_default(); // Should be valid as we generated it
+
         self.update_status(&id, JobStatus::Running);
-        
-        // We need to capture logs from executor. 
-        // Currently executor doesn't support log capture injection easily without changing StreamNode trait.
-        // For now, we'll just run it.
-        // TODO: Inject log sender into executor/nodes.
+        let _ = self.storage.update_execution(id_uuid, "running", None, None).await;
+
+        // Subscribe to events for persistence
+        if let Some(mut rx) = self.subscribe_to_events(&id) {
+            let storage = self.storage.clone();
+            let log_id_uuid = id_uuid;
+            tokio::spawn(async move {
+                while let Ok(event) = rx.recv().await {
+                    let _ = storage.log_execution_event(log_id_uuid, &event).await;
+                }
+            });
+        }
         
         // Inject event sender
         let event_sender = {
@@ -105,21 +125,20 @@ impl JobManager {
         };
 
         if let Some(sender) = event_sender {
-            // We need to pass this to executor.run(). 
-            // Since executor.run() signature is fixed in trait/struct, we might need to modify executor.
-            // But wait, executor is a struct. We can add a field to it or pass it to run.
-            // Let's assume we modify executor.run() or add a setter.
-            // Actually, better to pass it to run() or set it before run.
-            // Let's assume we will modify executor.run to accept optional event sender or set it.
-            // For now, let's modify executor struct to hold it.
             let mut executor = executor;
             executor.set_event_sender(sender);
             
             let result = executor.run().await;
             
             match result {
-                Ok(_) => self.update_status(&id, JobStatus::Completed),
-                Err(e) => self.update_status(&id, JobStatus::Failed(e.to_string())),
+                Ok(_) => {
+                    self.update_status(&id, JobStatus::Completed);
+                    let _ = self.storage.update_execution(id_uuid, "completed", Some(Utc::now()), None).await;
+                },
+                Err(e) => {
+                    self.update_status(&id, JobStatus::Failed(e.to_string()));
+                    let _ = self.storage.update_execution(id_uuid, "failed", Some(Utc::now()), Some(e.to_string())).await;
+                },
             }
         } else {
              self.update_status(&id, JobStatus::Failed("Job not found during run".to_string()));

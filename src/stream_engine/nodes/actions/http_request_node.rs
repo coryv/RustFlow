@@ -14,6 +14,7 @@ use std::collections::HashMap;
     client: Client,
     retry_count: u32,
     retry_delay_ms: u64,
+    auto_split: bool,
 }
 
 impl HttpRequestNode {
@@ -24,6 +25,7 @@ impl HttpRequestNode {
         body: Option<Value>,
         retry_count: u32,
         retry_delay_ms: u64,
+        auto_split: bool,
     ) -> Self {
         Self {
             method: method.to_uppercase(),
@@ -33,6 +35,7 @@ impl HttpRequestNode {
             client: Client::new(),
             retry_count,
             retry_delay_ms,
+            auto_split,
         }
     }
 
@@ -110,14 +113,30 @@ impl StreamNode for HttpRequestNode {
                                         }
                                     };
 
-                                    let output_data = json!({
-                                        "status": status,
-                                        "headers": headers,
-                                        "body": body_json,
-                                        "original_input": data
-                                    });
+                                    // Auto-Split Logic
+                                    if self.auto_split && body_json.is_array() {
+                                         if let Some(arr) = body_json.as_array() {
+                                             for item in arr {
+                                                 let output_data = json!({
+                                                     "status": status,
+                                                     "headers": headers,
+                                                     "body": item,
+                                                     "original_input": data
+                                                 });
+                                                 tx.send(output_data).await?;
+                                             }
+                                         }
+                                    } else {
+                                         // Standard single emission
+                                         let output_data = json!({
+                                             "status": status,
+                                             "headers": headers,
+                                             "body": body_json,
+                                             "original_input": data
+                                         });
+                                         tx.send(output_data).await?;
+                                    }
 
-                                    tx.send(output_data).await?;
                                     success = true;
                                     break; // Success, exit retry loop
                                 } else {

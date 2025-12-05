@@ -41,7 +41,8 @@ impl StreamNode for ExecuteWorkflowNode {
                         definition.nodes.push(crate::schema::NodeDefinition {
                             id: "_capture_".to_string(),
                             node_type: "accumulate".to_string(), // Use accumulate as a dummy sink
-                            config: serde_json::json!({}),
+                            config: serde_json::Value::Null,
+                            on_error: None,
                         });
                         // Add edge from return node to capture node
                         definition.edges.push(crate::schema::EdgeDefinition {

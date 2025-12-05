@@ -49,8 +49,6 @@ async fn main() {
         .allow_methods([Method::GET, Method::POST])
         .allow_headers(Any);
 
-    let job_manager = Arc::new(JobManager::new());
-    
     // Initialize DB
     let db_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite:rustflow.db".to_string());
     
@@ -71,6 +69,8 @@ async fn main() {
         s.init().await.expect("Failed to init SQLite");
         Arc::new(s)
     };
+
+    let job_manager = Arc::new(JobManager::new(storage.clone()));
 
     let state = Arc::new(AppState { job_manager, storage });
 

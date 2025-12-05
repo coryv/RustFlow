@@ -17,10 +17,18 @@ pub use actions::console_output::ConsoleOutputNode;
 pub use actions::set_data::SetDataNode;
 pub use actions::return_node::ReturnNode;
 pub use actions::execute_workflow_node::ExecuteWorkflowNode;
+pub use actions::loop_node::LoopNode;
+pub use actions::wait_node::WaitNode;
 pub use actions::code_node::CodeNode;
 pub use actions::function_node::FunctionNode;
+pub use actions::select_node::SelectNode;
+pub use actions::sql_node::SqlNode;
+pub use actions::file_ops::{FileReadNode, FileWriteNode, ListDirNode};
+pub use actions::connectivity::{FtpNode, SshNode};
+
 
 pub use logic::router_node::RouterNode;
+pub use logic::switch_node::SwitchNode;
 
 pub use data::join_node::{JoinNode, JoinType, JoinMode};
 pub use data::union_node::{UnionNode, UnionMode};

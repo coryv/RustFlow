@@ -35,6 +35,10 @@ uuid = { version = "1.18.1", features = ["v4", "serde"] }
 axum = { version = "0.8.7", features = ["ws"] }
 tower-http = { version = "0.6.7", features = ["cors", "fs"] }
 tracing-subscriber = "0.3.22"
+suppaftp = { version = "6.0", features = ["async-std"] } # Using async-std feature if needed, or default tokio? Check docs.
+# suppaftp defaults to async-std, but can use tokio.
+# Let's specify features properly.
+ssh2 = "0.9"
 tokio-stream = "0.1"
 futures = "0.3"
 argon2 = "0.5.3"

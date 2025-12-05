@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use tokio::sync::{mpsc, broadcast};
 use tokio::task::JoinSet;
 use crate::stream_engine::{StreamNode, DebugConfig};
-use crate::schema::ExecutionEvent;
+use crate::schema::{ExecutionEvent, ErrorPolicy};
 use anyhow::{Result, anyhow, Context};
 use serde_json::Value;
 
@@ -11,6 +11,7 @@ type OutputsMap = HashMap<String, HashMap<usize, Vec<mpsc::Sender<Value>>>>;
 
 pub struct StreamExecutor {
     nodes: HashMap<String, Box<dyn StreamNode>>,
+    node_policies: HashMap<String, ErrorPolicy>,
     // Edge: (from_id, from_port, to_id, to_port)
     edges: Vec<(String, usize, String, usize)>,
     event_sender: Option<broadcast::Sender<ExecutionEvent>>,
@@ -28,6 +29,7 @@ impl StreamExecutor {
     pub fn new(debug_config: DebugConfig) -> Self {
         Self {
             nodes: HashMap::new(),
+            node_policies: HashMap::new(),
             edges: Vec::new(),
             event_sender: None,
             debug_config,
@@ -39,8 +41,11 @@ impl StreamExecutor {
         self.event_sender = Some(sender);
     }
 
-    pub fn add_node(&mut self, id: String, node: Box<dyn StreamNode>) {
-        self.nodes.insert(id, node);
+    pub fn add_node(&mut self, id: String, node: Box<dyn StreamNode>, policy: Option<ErrorPolicy>) {
+        self.nodes.insert(id.clone(), node);
+        if let Some(p) = policy {
+            self.node_policies.insert(id, p);
+        }
     }
 
     pub fn add_connection(&mut self, from: String, from_port: usize, to: String, to_port: usize) {
@@ -63,6 +68,7 @@ impl StreamExecutor {
 
             let event_sender = self.event_sender.clone();
             let node_id = id.clone();
+            let policy = self.node_policies.get(&node_id).cloned().unwrap_or(ErrorPolicy::Stop);
 
             set.spawn(async move {
                 // Emit NodeStart
@@ -76,18 +82,36 @@ impl StreamExecutor {
                 if let Some(sender) = &event_sender {
                     match &result {
                         Ok(_) => {
-                            let _ = sender.send(ExecutionEvent::NodeFinish { node_id });
+                            let _ = sender.send(ExecutionEvent::NodeFinish { node_id: node_id.clone() });
                         }
                         Err(e) => {
                             let _ = sender.send(ExecutionEvent::NodeError { 
-                                node_id, 
+                                node_id: node_id.clone(), 
                                 error: e.to_string() 
                             });
                         }
                     }
                 }
                 
-                result
+                // Handle Policy
+                match result {
+                    Ok(_) => Ok(()),
+                    Err(e) => {
+                        match policy {
+                            ErrorPolicy::Continue => {
+                                eprintln!("Node {} failed but policy is Continue. Error: {}", node_id, e);
+                                Ok(()) // Suppress error
+                            }
+                            ErrorPolicy::Stop => Err(e),
+                            ErrorPolicy::Retry { .. } => {
+                                // Retry handled internally by node or currently unsupported at executor level
+                                // Fallback to Stop for now or simple error propagation
+                                eprintln!("Node {} failed. Retry policy set but not supported at executor level yet. Error: {}", node_id, e);
+                                Err(e)
+                            }
+                        }
+                    }
+                }
             });
         }
 

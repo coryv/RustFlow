@@ -1,0 +1,25 @@
+nodes:
+  - id: trigger
+    type: manual_trigger
+    config:
+      name: "Start"
+
+  - id: failing_node
+    type: code
+    config:
+      lang: "bad_lang"
+      code: "..."
+    on_error:
+      action: "continue"
+
+  - id: parallel_node
+    type: set_data
+    config:
+      json:
+        status: "I survived"
+
+edges:
+  - from: trigger
+    to: failing_node
+  - from: trigger
+    to: parallel_node

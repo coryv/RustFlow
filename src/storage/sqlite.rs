@@ -4,7 +4,8 @@ use uuid::Uuid;
 use serde_json::Value;
 use anyhow::{Result, anyhow};
 use chrono::{Utc, DateTime};
-use super::{Storage, Team, User, TeamMember, Role, WorkflowEntity, Credential};
+use super::{Storage, Team, User, TeamMember, Role, WorkflowEntity, Credential, ExecutionRecord};
+use crate::schema::ExecutionEvent;
 use argon2::{
     password_hash::{
         rand_core::OsRng,
@@ -74,6 +75,23 @@ impl Storage for SqliteStorage {
                 data TEXT NOT NULL,
                 created_at TEXT NOT NULL,
                 FOREIGN KEY(account_id) REFERENCES teams(id)
+            );
+            CREATE TABLE IF NOT EXISTS executions (
+                id TEXT PRIMARY KEY,
+                workflow_id TEXT, -- Nullable
+                status TEXT NOT NULL,
+                started_at TEXT NOT NULL,
+                finished_at TEXT,
+                error TEXT,
+                FOREIGN KEY(workflow_id) REFERENCES workflows(id)
+            );
+            CREATE TABLE IF NOT EXISTS execution_events (
+                id TEXT PRIMARY KEY,
+                execution_id TEXT NOT NULL,
+                event_type TEXT NOT NULL,
+                data TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY(execution_id) REFERENCES executions(id)
             );
             "#
         )
@@ -408,6 +426,104 @@ impl Storage for SqliteStorage {
             });
         }
         Ok(creds)
+    }
+
+    // Executions
+    async fn create_execution(&self, id: Uuid, workflow_id: Option<Uuid>, status: &str) -> Result<Uuid> {
+        let started_at = Utc::now();
+        let wf_id_str = workflow_id.map(|u| u.to_string());
+        
+        sqlx::query(
+            "INSERT INTO executions (id, workflow_id, status, started_at) VALUES (?, ?, ?, ?)"
+        )
+        .bind(id.to_string())
+        .bind(wf_id_str)
+        .bind(status)
+        .bind(started_at.to_rfc3339())
+        .execute(&self.pool)
+        .await?;
+        Ok(id)
+    }
+
+    async fn update_execution(&self, id: Uuid, status: &str, finished_at: Option<chrono::DateTime<Utc>>, error: Option<String>) -> Result<()> {
+        let fin_at_str = finished_at.map(|t| t.to_rfc3339());
+        sqlx::query(
+            "UPDATE executions SET status = ?, finished_at = ?, error = ? WHERE id = ?"
+        )
+        .bind(status)
+        .bind(fin_at_str)
+        .bind(error)
+        .bind(id.to_string())
+        .execute(&self.pool)
+        .await?;
+        Ok(())
+    }
+
+    async fn log_execution_event(&self, execution_id: Uuid, event: &ExecutionEvent) -> Result<()> {
+        let id = Uuid::new_v4();
+        let created_at = Utc::now();
+        let event_type = match event {
+            ExecutionEvent::NodeStart { .. } => "NodeStart",
+            ExecutionEvent::NodeFinish { .. } => "NodeFinish",
+            ExecutionEvent::NodeError { .. } => "NodeError",
+            ExecutionEvent::EdgeData { .. } => "EdgeData",
+            ExecutionEvent::WorkflowStart { .. } => "WorkflowStart",
+            ExecutionEvent::WorkflowFinish { .. } => "WorkflowFinish",
+        };
+        let data = serde_json::to_string(event)?;
+        
+        sqlx::query(
+            "INSERT INTO execution_events (id, execution_id, event_type, data, created_at) VALUES (?, ?, ?, ?, ?)"
+        )
+        .bind(id.to_string())
+        .bind(execution_id.to_string())
+        .bind(event_type)
+        .bind(data)
+        .bind(created_at.to_rfc3339())
+        .execute(&self.pool)
+        .await?;
+        Ok(())
+    }
+
+    async fn get_execution(&self, id: Uuid) -> Result<Option<ExecutionRecord>> {
+        let row = sqlx::query("SELECT id, workflow_id, status, started_at, finished_at, error FROM executions WHERE id = ?")
+            .bind(id.to_string())
+            .fetch_optional(&self.pool)
+            .await?;
+
+        if let Some(row) = row {
+            let wf_id_db: Option<String> = row.get("workflow_id");
+            let wf_id = if let Some(s) = wf_id_db { Some(Uuid::parse_str(&s)?) } else { None };
+            
+            let fin_at_db: Option<String> = row.get("finished_at");
+            let fin_at = if let Some(s) = fin_at_db { Some(DateTime::parse_from_rfc3339(&s)?.with_timezone(&Utc)) } else { None };
+
+            Ok(Some(ExecutionRecord {
+                id: Uuid::parse_str(row.get("id"))?,
+                workflow_id: wf_id,
+                status: row.get("status"),
+                started_at: DateTime::parse_from_rfc3339(row.get("started_at"))?.with_timezone(&Utc),
+                finished_at: fin_at,
+                error: row.get("error"),
+            }))
+        } else {
+            Ok(None)
+        }
+    }
+
+    async fn get_execution_logs(&self, id: Uuid) -> Result<Vec<ExecutionEvent>> {
+        let rows = sqlx::query("SELECT data FROM execution_events WHERE execution_id = ? ORDER BY created_at ASC")
+            .bind(id.to_string())
+            .fetch_all(&self.pool)
+            .await?;
+
+        let mut events = Vec::new();
+        for row in rows {
+            let data_str: String = row.get("data");
+            let event: ExecutionEvent = serde_json::from_str(&data_str)?;
+            events.push(event);
+        }
+        Ok(events)
     }
 }
 

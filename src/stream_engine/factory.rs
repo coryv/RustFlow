@@ -52,6 +52,10 @@ impl NodeFactory {
         self.register("console_output", |_, _| Ok(Box::new(nodes::ConsoleOutputNode)));
         self.register("set_data", |config, _| Ok(Box::new(nodes::SetDataNode::new(config))));
         
+        self.register("switch", |config, _| {
+             Ok(Box::new(nodes::SwitchNode::new(config)))
+        });
+
         self.register("router", |config, _| {
             let key = config.get("key").and_then(|v| v.as_str()).unwrap_or("id");
             let value = config.get("value").cloned().unwrap_or(Value::Null);
@@ -119,8 +123,9 @@ impl NodeFactory {
             let body = config.get("body").cloned();
             let retry_count = config.get("retry_count").and_then(|v| v.as_u64()).unwrap_or(0) as u32;
             let retry_delay_ms = config.get("retry_delay_ms").and_then(|v| v.as_u64()).unwrap_or(0);
+            let auto_split = config.get("auto_split").and_then(|v| v.as_bool()).unwrap_or(true);
             
-            Ok(Box::new(nodes::HttpRequestNode::new(method, url, headers, body, retry_count, retry_delay_ms)))
+            Ok(Box::new(nodes::HttpRequestNode::new(method, url, headers, body, retry_count, retry_delay_ms, auto_split)))
         });
 
         self.register("time_trigger", |config, _| {
@@ -141,8 +146,74 @@ impl NodeFactory {
             Ok(Box::new(nodes::CodeNode::new(lang, code)))
         });
 
+        // Sql Query
+        self.register("sql_query", |config, _| {
+            Ok(Box::new(nodes::SqlNode::new(config)))
+        });
+
+        // File System
+        self.register("file_read", |config, _| {
+             Ok(Box::new(nodes::FileReadNode::new(config)))
+        });
+        self.register("file_write", |config, _| {
+             Ok(Box::new(nodes::FileWriteNode::new(config)))
+        });
+        self.register("list_dir", |config, _| {
+             Ok(Box::new(nodes::ListDirNode::new(config)))
+        });
+
+        // Connectivity
+        self.register("ftp_op", |config, _| {
+             Ok(Box::new(nodes::FtpNode::new(config)))
+        });
+        self.register("ssh_command", |config, _| {
+             Ok(Box::new(nodes::SshNode::new(config)))
+        });
+
         self.register("delay", |config, _| {
             Ok(Box::new(nodes::DelayNode::new(config)))
+        });
+
+        self.register("select", |config, _| {
+            // let id is handled by wrapper, but SelectNode needs id passed to new?
+            // Wait, standard nodes usually don't take ID in constructor here unless they store it.
+            // SelectNode struct I wrote takes `id`.
+            // But `NodeFactory` interface is `config` and `secrets`.
+            // The `id` is passed when calling `executor.add_node(id, node)`.
+            // Ah, looking at `SelectNode::new(id, config)`, it expects ID.
+            // But `NodeDefinition` has ID. `Executor` adds it.
+            // Let's check `code_node`.
+            // `CodeNode::new(lang, code)`.
+            // `SelectNode` should probably not take `id` in `new` if it's just for execution logging unless it needs it for internal reasons.
+            // `StreamNode` trait doesn't enforce ID storage.
+            // `ExecutionEvent` uses the ID passed by `StreamExecutor`.
+            // Let me check my `SelectNode` implementation again.
+            // I used `self.id` in `run`.
+            // If I need ID, I should probably pass it or `StreamNode` should have `id()`.
+            // But `NodeFactory` logic: `factory.create`.
+            // `factory.create` calls closure.
+            // `executor.add_node(id, node)`.
+            // The closure signature is `Fn(Value, &HashMap) -> Result<Box<dyn StreamNode>>`.
+            // It does NOT accept ID.
+            // So `SelectNode` cannot take ID in constructor if created by factory signature.
+            // I should modify `SelectNode` to NOT store ID, or `StreamExecutor` effectively manages identity.
+            // Wait, `StreamNode::run` doesn't take ID.
+            // So how do other nodes report their ID in events?
+            // Looking at `executor.rs`:
+            // `executor.emit_event(ExecutionEvent::NodeStart { node_id: node_id.clone() })`
+            // The `executor` handles the event emission wrapping `node.run`.
+            // SO `StreamNode` implementation DOES NOT need to emit `NodeStart`/`NodeFinish`.
+            // `StreamExecutor` does it!
+            // Let me re-read `executor.rs`.
+            // Lines 74-77 in `executor.rs`: `sender.send(ExecutionEvent::NodeStart ...)`
+            // Lines 81-86: `sender.send(ExecutionEvent::NodeFinish ...)`
+            // So `SelectNode` implementation was redundant/wrong in emitting those events itself if it doesn't know its ID.
+            // AND `SelectNode` doesn't need to know its ID.
+            // So I should fix `SelectNode` first to remove ID and event emission.
+            // Then register here.
+            
+            // I will register it assuming I fix SelectNode.
+            Ok(Box::new(nodes::SelectNode::new(config)))
         });
 
         self.register("html_extract", |config, _| {
@@ -169,8 +240,8 @@ impl NodeFactory {
             Ok(Box::new(nodes::SplitNode::new(path)))
         });
 
-        self.register("accumulate", |_, _| {
-            Ok(Box::new(nodes::AccumulateNode::new()))
+        self.register("accumulate", |config, _| {
+            Ok(Box::new(nodes::AccumulateNode::new(config)))
         });
 
         self.register("return", |config, _| {
@@ -179,9 +250,30 @@ impl NodeFactory {
         });
 
         self.register("execute_workflow", |config, _| {
-            let workflow_path = config.get("workflow_path").and_then(|v| v.as_str()).ok_or_else(|| anyhow::anyhow!("Missing workflow_path"))?.to_string();
+            let workflow_path = config["workflow_path"].as_str().ok_or(anyhow::anyhow!("Missing workflow_path"))?.to_string();
             let inputs = config.get("inputs").cloned();
             Ok(Box::new(nodes::ExecuteWorkflowNode::new(workflow_path, inputs)))
+        });
+
+        self.register("loop", |config, _| {
+            let workflow_path = config["workflow_path"].as_str().ok_or(anyhow::anyhow!("Missing workflow_path"))?.to_string();
+            let max_iterations = config.get("max_iterations").and_then(|v| v.as_u64()).unwrap_or(100) as usize;
+            let condition_key = config["condition_key"].as_str().ok_or(anyhow::anyhow!("Missing condition_key"))?.to_string();
+            let condition_operator = config["condition_operator"].as_str().ok_or(anyhow::anyhow!("Missing condition_operator"))?.to_string();
+            let condition_value = config.get("condition_value").cloned().unwrap_or(serde_json::Value::Null);
+            
+            Ok(Box::new(nodes::LoopNode::new(
+                workflow_path,
+                max_iterations,
+                condition_key,
+                condition_operator,
+                condition_value,
+            )))
+        });
+
+        self.register("wait", |config, _| {
+            let timeout_ms = config.get("timeout_ms").and_then(|v| v.as_u64());
+            Ok(Box::new(nodes::WaitNode::new(timeout_ms)))
         });
 
         self.register("agent", |config, secrets| {

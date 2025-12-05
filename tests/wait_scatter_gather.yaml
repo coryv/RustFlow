@@ -1,0 +1,55 @@
+name: "Wait Scatter Gather"
+nodes:
+  - id: "trigger"
+    type: "manual_trigger"
+    config: {}
+
+  - id: "branch_a"
+    type: "set_data"
+    config:
+      json:
+        value: "Result A"
+
+  - id: "branch_b"
+    type: "set_data"
+    config:
+      json:
+        value: "Result B"
+        
+  - id: "delay_b"
+    type: "delay"
+    config:
+      duration_ms: 500
+
+  - id: "wait_node"
+    type: "wait"
+    config:
+      timeout_ms: 2000
+
+  - id: "log_result"
+    type: "console_output"
+    config: {}
+
+edges:
+  - from: "trigger"
+    to: "branch_a"
+  - from: "trigger"
+    to: "branch_b"
+  
+  - from: "branch_a"
+    to: "wait_node"
+    to_port: 0
+    
+  - from: "branch_b"
+    to: "delay_b"
+  - from: "delay_b"
+    to: "wait_node"
+    to_port: 1
+
+  - from: "wait_node"
+    to: "log_result"
+    from_port: 0
+    
+  - from: "wait_node"
+    to: "log_result"
+    from_port: 1

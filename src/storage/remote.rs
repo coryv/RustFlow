@@ -224,6 +224,7 @@ impl Storage for RemoteStorage {
         Err(anyhow!("Not implemented"))
     }
 
+
     async fn list_credentials(&self, team_id: Uuid) -> Result<Vec<Credential>> {
         let url = format!("{}/api/teams/{}/credentials", self.base_url, team_id);
         let resp = self.client.get(&url).send().await?;
@@ -232,5 +233,26 @@ impl Storage for RemoteStorage {
         } else {
             Err(anyhow!("Failed to list credentials"))
         }
+    }
+
+    // Executions
+    async fn create_execution(&self, _id: Uuid, _workflow_id: Option<Uuid>, _status: &str) -> Result<Uuid> {
+        Err(anyhow!("Not implemented for RemoteStorage"))
+    }
+
+    async fn update_execution(&self, _id: Uuid, _status: &str, _finished_at: Option<chrono::DateTime<chrono::Utc>>, _error: Option<String>) -> Result<()> {
+        Err(anyhow!("Not implemented for RemoteStorage"))
+    }
+
+    async fn log_execution_event(&self, _execution_id: Uuid, _event: &crate::schema::ExecutionEvent) -> Result<()> {
+        Err(anyhow!("Not implemented for RemoteStorage"))
+    }
+
+    async fn get_execution(&self, _id: Uuid) -> Result<Option<crate::storage::ExecutionRecord>> {
+        Err(anyhow!("Not implemented for RemoteStorage"))
+    }
+
+    async fn get_execution_logs(&self, _id: Uuid) -> Result<Vec<crate::schema::ExecutionEvent>> {
+        Err(anyhow!("Not implemented for RemoteStorage"))
     }
 }

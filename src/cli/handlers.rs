@@ -205,6 +205,12 @@ pub async fn handle_command(args: Args) -> Result<()> {
                         rust_flow::schema::ExecutionEvent::NodeError { node_id, error } => {
                             eprintln!("Node Error ({}): {}", node_id, error);
                         }
+                        rust_flow::schema::ExecutionEvent::WorkflowStart { .. } => {
+                            println!("Workflow Started");
+                        }
+                        rust_flow::schema::ExecutionEvent::WorkflowFinish { .. } => {
+                            println!("Workflow Finished");
+                        }
                     }
                 }
             });
@@ -276,6 +282,30 @@ pub async fn handle_command(args: Args) -> Result<()> {
         Commands::Build => {
             let mut builder = builder::BuilderState::new();
             builder.run().await?;
+        }
+        Commands::Manage { file } => {
+            match file {
+                Some(path) => {
+                     let content = fs::read_to_string(&path)
+                        .with_context(|| format!("Failed to read file: {:?}", path))?;
+                     let loader = WorkflowLoader::new();
+                     let def = loader.load(&content)?;
+                     println!("Loaded workflow from {:?}", path);
+                     
+                     let mut builder = builder::BuilderState::from_definition(def);
+                     builder.run().await?;
+                     
+                     // Helper: after managing, we might want to save back?
+                     // Builder has "Save Workflow", which asks for simplified filename.
+                     // The user might want to save over the original file.
+                     // But Builder's save logic is generic. 
+                     // For now, assume user manually saves using the menu.
+                },
+                None => {
+                    // TODO: Implement picking from DB/List
+                    println!("No file specified. Use --file <path> to manage a local workflow.");
+                }
+            }
         }
     }
     Ok(())

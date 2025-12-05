@@ -132,6 +132,13 @@ pub enum Commands {
     ListNodes,
     #[command(about = "Start interactive workflow builder")]
     Build,
+    
+    #[command(about = "Manage an existing workflow")]
+    Manage {
+        /// Path to workflow file
+        #[arg(short, long)]
+        file: Option<PathBuf>,
+    },
 }
 
 #[derive(Subcommand, Debug)]

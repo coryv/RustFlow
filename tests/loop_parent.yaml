@@ -1,0 +1,32 @@
+name: "Loop Parent Workflow"
+nodes:
+  - id: "trigger"
+    type: "manual_trigger"
+    config: {}
+
+  - id: "init_data"
+    type: "set_data"
+    config:
+      json:
+        page: 1
+
+  - id: "loop_node"
+    type: "loop"
+    config:
+      workflow_path: "tests/loop_child.yaml"
+      max_iterations: 10
+      condition_key: "has_more"
+      condition_operator: "=="
+      condition_value: true
+
+  - id: "log_result"
+    type: "console_output"
+    config: {}
+
+edges:
+  - from: "trigger"
+    to: "init_data"
+  - from: "init_data"
+    to: "loop_node"
+  - from: "loop_node"
+    to: "log_result"

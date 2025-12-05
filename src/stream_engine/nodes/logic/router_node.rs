@@ -17,8 +17,8 @@ impl RouterNode {
 
     fn compare(&self, actual: &Value, expected: &Value) -> bool {
         match self.operator.as_str() {
-            "==" => actual == expected || self.loose_eq(actual, expected),
-            "!=" => actual != expected && !self.loose_eq(actual, expected),
+            "==" => actual == expected || crate::stream_engine::utils::loose_eq(actual, expected),
+            "!=" => actual != expected && !crate::stream_engine::utils::loose_eq(actual, expected),
             ">" => self.compare_numbers(actual, expected, |a, b| a > b),
             "<" => self.compare_numbers(actual, expected, |a, b| a < b),
             ">=" => self.compare_numbers(actual, expected, |a, b| a >= b),
@@ -28,39 +28,19 @@ impl RouterNode {
         }
     }
 
-    fn loose_eq(&self, a: &Value, b: &Value) -> bool {
-        // Handle "123" == 123
-        if let (Some(a_num), Some(b_num)) = (self.to_f64(a), self.to_f64(b)) {
-            return (a_num - b_num).abs() < f64::EPSILON;
-        }
-        // Handle "true" == true
-        if let (Value::String(s), Value::Bool(b_val)) = (a, b) {
-            return s.parse::<bool>().unwrap_or(false) == *b_val;
-        }
-        if let (Value::Bool(a_val), Value::String(s)) = (a, b) {
-            return *a_val == s.parse::<bool>().unwrap_or(false);
-        }
-        false
-    }
-
-    fn to_f64(&self, v: &Value) -> Option<f64> {
-        match v {
-            Value::Number(n) => n.as_f64(),
-            Value::String(s) => s.parse::<f64>().ok(),
-            _ => None,
-        }
-    }
-
     fn compare_numbers<F>(&self, a: &Value, b: &Value, op: F) -> bool
     where
         F: Fn(f64, f64) -> bool,
     {
-        if let (Some(a_num), Some(b_num)) = (self.to_f64(a), self.to_f64(b)) {
-            op(a_num, b_num)
+        use crate::stream_engine::utils::to_f64;
+        if let (Some(a_num), Some(b_num)) = (to_f64(a), to_f64(b)) {
+             op(a_num, b_num)
         } else {
-            false
+             false
         }
     }
+
+
 
     fn check_contains(&self, container: &Value, item: &Value) -> bool {
         match container {

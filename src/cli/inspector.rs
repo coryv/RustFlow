@@ -65,6 +65,7 @@ pub fn run_inspector(root_data: &Value) -> Result<()> {
         if stack.len() > 1 {
             choices.push("Back".to_string());
         }
+        choices.push("Copy Path".to_string());
         choices.push("Exit".to_string());
 
         let selection = Select::with_theme(&ColorfulTheme::default())
@@ -93,6 +94,9 @@ pub fn run_inspector(root_data: &Value) -> Result<()> {
             }
         } else if choice == "Query (JMESPath)" {
              run_jmespath_query(root_data)?;
+        } else if choice == "Copy Path" {
+            println!("{}", style(format!("Path copied to clipboard (simulated): {}", display_path)).green());
+            println!("Use this path in your node configuration: {}", style(&display_path).bold());
         } else if choice == "Back" {
             stack.pop();
         } else if choice == "Exit" {

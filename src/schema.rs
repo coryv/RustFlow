@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use anyhow::Result;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct WorkflowDefinition {
     pub nodes: Vec<NodeDefinition>,
     pub edges: Vec<EdgeDefinition>,
@@ -14,9 +14,19 @@ pub struct NodeDefinition {
     #[serde(rename = "type")]
     pub node_type: String,
     pub config: Value,
+    #[serde(default)]
+    pub on_error: Option<ErrorPolicy>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(tag = "action", rename_all = "snake_case")]
+pub enum ErrorPolicy {
+    Stop,
+    Continue,
+    Retry { attempts: u32, wait_ms: u64 },
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct EdgeDefinition {
     pub from: String,
     pub from_port: Option<String>,
@@ -30,6 +40,8 @@ pub enum ExecutionEvent {
     NodeFinish { node_id: String },
     EdgeData { from: String, to: String, value: Value },
     NodeError { node_id: String, error: String },
+    WorkflowStart { workflow_id: Option<String> },
+    WorkflowFinish { workflow_id: Option<String> },
 }
 
 use crate::stream_engine::{StreamExecutor, DebugConfig};
@@ -41,7 +53,7 @@ impl WorkflowDefinition {
 
         for node_def in &self.nodes {
             let node = factory.create(&node_def.node_type, node_def.config.clone(), secrets)?;
-            executor.add_node(node_def.id.clone(), node);
+            executor.add_node(node_def.id.clone(), node, node_def.on_error.clone());
         }
 
         let registry = crate::node_registry::get_node_registry();

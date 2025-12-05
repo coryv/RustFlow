@@ -1,0 +1,27 @@
+name: "Loop Child Workflow"
+nodes:
+  - id: "trigger"
+    type: "child_workflow_trigger"
+    config: {}
+
+  - id: "process_page"
+    type: "code"
+    config:
+      code: |
+        let page = (input.json && input.json.page) ? input.json.page : (input.page || 1);
+        let has_more = page < 5;
+        output = {
+          "page": page + 1,
+          "has_more": has_more,
+          "data": "Page " + page
+        };
+
+  - id: "return_result"
+    type: "return"
+    config: {}
+
+edges:
+  - from: "trigger"
+    to: "process_page"
+  - from: "process_page"
+    to: "return_result"

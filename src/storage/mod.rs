@@ -4,6 +4,17 @@ use serde_json::Value;
 use uuid::Uuid;
 use anyhow::Result;
 use chrono::{DateTime, Utc};
+use crate::schema::ExecutionEvent;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ExecutionRecord {
+    pub id: Uuid,
+    pub workflow_id: Option<Uuid>,
+    pub status: String,
+    pub started_at: DateTime<Utc>,
+    pub finished_at: Option<DateTime<Utc>>,
+    pub error: Option<String>,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {
@@ -96,6 +107,14 @@ pub trait Storage: Send + Sync {
     async fn create_credential(&self, name: &str, credential_type: &str, data: &str, team_id: Uuid) -> Result<Credential>;
     async fn get_credential(&self, id: Uuid) -> Result<Option<Credential>>;
     async fn list_credentials(&self, team_id: Uuid) -> Result<Vec<Credential>>;
+
+
+    // Executions
+    async fn create_execution(&self, id: Uuid, workflow_id: Option<Uuid>, status: &str) -> Result<Uuid>;
+    async fn update_execution(&self, id: Uuid, status: &str, finished_at: Option<DateTime<Utc>>, error: Option<String>) -> Result<()>;
+    async fn log_execution_event(&self, execution_id: Uuid, event: &ExecutionEvent) -> Result<()>;
+    async fn get_execution(&self, id: Uuid) -> Result<Option<ExecutionRecord>>;
+    async fn get_execution_logs(&self, id: Uuid) -> Result<Vec<ExecutionEvent>>;
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
