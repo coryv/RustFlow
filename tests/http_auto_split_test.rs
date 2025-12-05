@@ -1,6 +1,6 @@
 use rust_flow::schema::{WorkflowDefinition, NodeDefinition, EdgeDefinition};
 use rust_flow::stream_engine::DebugConfig;
-use serde_json::{json, Value};
+use serde_json::json;
 use std::collections::HashMap;
 use std::io::{Read, Write};
 use std::net::TcpListener;
@@ -17,7 +17,7 @@ async fn test_http_auto_split() {
         for stream in listener.incoming() {
              let mut stream = stream.unwrap();
              let mut buffer = [0; 1024];
-             stream.read(&mut buffer).unwrap();
+             let _ = stream.read(&mut buffer).unwrap();
              
              let body = r#"[{"id":1},{"id":2}]"#;
              let response = format!("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\r\n{}", body.len(), body);

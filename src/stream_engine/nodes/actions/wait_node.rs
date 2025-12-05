@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use crate::stream_engine::StreamNode;
 use tokio::sync::mpsc::{Receiver, Sender};
-use serde_json::{json, Value};
+use serde_json::Value;
 use anyhow::Result;
 use tokio::time::{timeout, Duration};
 
@@ -50,7 +50,7 @@ impl StreamNode for WaitNode {
         // None = waiting for data. Some = has data.
         let mut pending_values: Vec<Option<Value>> = vec![None; num_inputs];
         // Track streams that have permanently ended
-        let mut closed_streams = vec![false; num_inputs];
+        let closed_streams = vec![false; num_inputs];
 
         loop {
             // Check if we have gathered all inputs

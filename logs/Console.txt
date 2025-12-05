@@ -1,0 +1,187 @@
+[Warning] 700 console messages are not shown.
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Error] panicked at /Users/coryvogan/Documents/Dev/RustFlow/src/engine/executor.rs:118:82:
+Node not found
+
+Stack:
+
+@http://localhost:5173/@fs/Users/coryvogan/Documents/Dev/RustFlow/rust_flow_wasm/pkg/rust_flow_wasm.js:321:30
+<?>.wasm-function[388]@[wasm code]
+<?>.wasm-function[170]@[wasm code]
+<?>.wasm-function[287]@[wasm code]
+<?>.wasm-function[221]@[wasm code]
+<?>.wasm-function[34]@[wasm code]
+<?>.wasm-function[332]@[wasm code]
+<?>.wasm-function[93]@[wasm code]
+<?>.wasm-function[307]@[wasm code]
+<?>.wasm-function[306]@[wasm code]
+<?>.wasm-function[331]@[wasm code]
+wasm_bindgen__convert__closures_____invoke__he5de2356a3e7708e@http://localhost:5173/@fs/Users/coryvogan/Documents/Dev/RustFlow/rust_flow_wasm/pkg/rust_flow_wasm.js:148:71
+real@http://localhost:5173/@fs/Users/coryvogan/Documents/Dev/RustFlow/rust_flow_wasm/pkg/rust_flow_wasm.js:58:21
+
+
+	(anonymous function) (rust_flow_wasm.js:315)
+	<?>.wasm-function[388]
+	<?>.wasm-function[170]
+	<?>.wasm-function[287]
+	<?>.wasm-function[221]
+	<?>.wasm-function[34]
+	<?>.wasm-function[332]
+	<?>.wasm-function[93]
+	<?>.wasm-function[307]
+	<?>.wasm-function[306]
+	<?>.wasm-function[331]
+	wasm_bindgen__convert__closures_____invoke__he5de2356a3e7708e (rust_flow_wasm.js:148)
+	real (rust_flow_wasm.js:58)
+[Error] RuntimeError: Unreachable code should not be executed (evaluating 'wasm.wasm_bindgen__convert__closures_____invoke__he5de2356a3e7708e(arg0, arg1, arg2)')
+	<?>.wasm-function[170] (rust_flow_wasm.js:148)
+	<?>.wasm-function[287]
+	<?>.wasm-function[221]
+	<?>.wasm-function[34]
+	<?>.wasm-function[332]
+	<?>.wasm-function[93]
+	<?>.wasm-function[307]
+	<?>.wasm-function[306]
+	<?>.wasm-function[331]
+	wasm_bindgen__convert__closures_____invoke__he5de2356a3e7708e (rust_flow_wasm.js:148)
+	real (rust_flow_wasm.js:58)
+[Log] Workflow executed successfully! (App.tsx, line 120)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "manual_trigger" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Warning] [React Flow]: Node type "http_request" not found. Using fallback type "default". Help: https://reactflow.dev/error#003 (reactflow.js, line 3691)
+[Error] panicked at /Users/coryvogan/Documents/Dev/RustFlow/src/engine/executor.rs:118:82:
+Node not found
+
+Stack:
+
+@http://localhost:5173/@fs/Users/coryvogan/Documents/Dev/RustFlow/rust_flow_wasm/pkg/rust_flow_wasm.js:321:30
+<?>.wasm-function[388]@[wasm code]
+<?>.wasm-function[170]@[wasm code]
+<?>.wasm-function[287]@[wasm code]
+<?>.wasm-function[221]@[wasm code]
+<?>.wasm-function[34]@[wasm code]
+<?>.wasm-function[332]@[wasm code]
+<?>.wasm-function[93]@[wasm code]
+<?>.wasm-function[307]@[wasm code]
+<?>.wasm-function[306]@[wasm code]
+<?>.wasm-function[331]@[wasm code]
+wasm_bindgen__convert__closures_____invoke__he5de2356a3e7708e@http://localhost:5173/@fs/Users/coryvogan/Documents/Dev/RustFlow/rust_flow_wasm/pkg/rust_flow_wasm.js:148:71
+real@http://localhost:5173/@fs/Users/coryvogan/Documents/Dev/RustFlow/rust_flow_wasm/pkg/rust_flow_wasm.js:58:21
+
+
+	(anonymous function) (rust_flow_wasm.js:315)
+	<?>.wasm-function[388]
+	<?>.wasm-function[170]
+	<?>.wasm-function[287]
+	<?>.wasm-function[221]
+	<?>.wasm-function[34]
+	<?>.wasm-function[332]
+	<?>.wasm-function[93]
+	<?>.wasm-function[307]
+	<?>.wasm-function[306]
+	<?>.wasm-function[331]
+	wasm_bindgen__convert__closures_____invoke__he5de2356a3e7708e (rust_flow_wasm.js:148)
+	real (rust_flow_wasm.js:58)
+[Error] RuntimeError: Unreachable code should not be executed (evaluating 'wasm.wasm_bindgen__convert__closures_____invoke__he5de2356a3e7708e(arg0, arg1, arg2)')
+	<?>.wasm-function[170] (rust_flow_wasm.js:148)
+	<?>.wasm-function[287]
+	<?>.wasm-function[221]
+	<?>.wasm-function[34]
+	<?>.wasm-function[332]
+	<?>.wasm-function[93]
+	<?>.wasm-function[307]
+	<?>.wasm-function[306]
+	<?>.wasm-function[331]
+	wasm_bindgen__convert__closures_____invoke__he5de2356a3e7708e (rust_flow_wasm.js:148)
+	real (rust_flow_wasm.js:58)
+[Log] Workflow executed successfully! (App.tsx, line 120)

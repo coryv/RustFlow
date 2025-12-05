@@ -200,7 +200,7 @@ impl BuilderState {
                 // We need to use `Input::<String>` and try to parse.
                 loop {
                     let mut input = Input::<String>::with_theme(&theme);
-                    input = input.with_prompt(&format!("{} (Number) [Type '?' for variables]", prop.label));
+                    input = input.with_prompt(format!("{} (Number) [Type '?' for variables]", prop.label));
                     if let Some(def) = &prop.default {
                         input = input.default(def.clone());
                     }

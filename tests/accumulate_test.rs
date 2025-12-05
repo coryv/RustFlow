@@ -1,6 +1,6 @@
 use rust_flow::schema::{WorkflowDefinition, NodeDefinition, EdgeDefinition};
 use rust_flow::stream_engine::DebugConfig;
-use serde_json::{json, Value};
+use serde_json::json;
 use std::collections::HashMap;
 
 #[tokio::test]

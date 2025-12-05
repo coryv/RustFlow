@@ -24,7 +24,7 @@ impl StreamNode for ReturnNode {
                 let result = if let Some(val) = &self.value {
                     match val {
                         Value::String(s) => {
-                            let mut env = crate::stream_engine::expressions::create_environment();
+                            let env = crate::stream_engine::expressions::create_environment();
                             match env.render_str(s, &data) {
                                 Ok(rendered) => {
                                     // Try to parse as JSON to preserve types (e.g. "20" -> 20)

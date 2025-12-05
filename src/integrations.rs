@@ -1,4 +1,5 @@
-// This file includes the generated integration code from build.rs
-#![allow(clippy::possible_missing_else)]
+#![allow(clippy::all)]
+#![allow(unused_mut)]
+#![allow(unused_variables)]
 include!(concat!(env!("OUT_DIR"), "/integrations.rs"));
 

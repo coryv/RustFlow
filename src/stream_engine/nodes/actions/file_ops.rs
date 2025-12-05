@@ -218,9 +218,9 @@ impl StreamNode for ListDirNode {
 fn matches_pattern(path: &std::path::Path, pattern: &str) -> bool {
     if pattern == "*" { return true; }
     // Simple extension match e.g. "*.csv"
-    if pattern.starts_with("*.") {
+    if let Some(stripped) = pattern.strip_prefix("*.") {
         if let Some(ext) = path.extension() {
-            return ext.to_string_lossy() == &pattern[2..];
+            return ext.to_string_lossy() == stripped;
         }
     }
     // Simple name match

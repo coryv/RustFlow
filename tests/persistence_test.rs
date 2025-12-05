@@ -1,7 +1,7 @@
 use rust_flow::job_manager::JobManager;
 use rust_flow::storage::{Storage, SqliteStorage};
 use rust_flow::stream_engine::{StreamExecutor, DebugConfig};
-use rust_flow::schema::ExecutionEvent;
+
 use std::sync::Arc;
 use uuid::Uuid;
 use tokio::time::{sleep, Duration};
@@ -31,7 +31,7 @@ async fn test_persistence() {
     // We create a dummy executor logic. 
     // Ideally we build a real executor from a simple workflow.
     // Let's manually build an empty executor.
-    let mut executor = StreamExecutor::new(DebugConfig::default());
+    let executor = StreamExecutor::new(DebugConfig::default());
     // We won't add nodes, so it finishes immediately.
 
     job_manager.run_job(job_id.clone(), executor).await;

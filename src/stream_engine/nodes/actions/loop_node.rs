@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use crate::stream_engine::{StreamNode, StreamExecutor, DebugConfig};
+use crate::stream_engine::{StreamNode, DebugConfig};
 use crate::schema::{WorkflowDefinition, NodeDefinition, EdgeDefinition, ExecutionEvent};
 use tokio::sync::mpsc::{Receiver, Sender};
 use serde_json::Value;
@@ -166,14 +166,11 @@ impl StreamNode for LoopNode {
 
                     // Listen for events to capture output
                     while let Ok(event) = event_rx.recv().await {
-                        match event {
-                            ExecutionEvent::EdgeData { to, value, .. } => {
-                                if to == capture_node_id {
-                                    // This is the data sent to our capture node
-                                    captured_result = Some(value);
-                                }
+                        if let ExecutionEvent::EdgeData { to, value, .. } = event {
+                            if to == capture_node_id {
+                                // This is the data sent to our capture node
+                                captured_result = Some(value);
                             }
-                            _ => {}
                         }
                     }
 

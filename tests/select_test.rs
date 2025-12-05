@@ -1,6 +1,6 @@
 use rust_flow::schema::{WorkflowDefinition, NodeDefinition, EdgeDefinition};
 use rust_flow::stream_engine::DebugConfig;
-use serde_json::{json, Value};
+use serde_json::json;
 use std::collections::HashMap;
 
 #[tokio::test]
@@ -154,7 +154,7 @@ async fn test_select_node_casting() {
             if from == "cast_bool" {
                 println!("Captured Bool: {:?}", value);
                 assert!(value.is_boolean());
-                assert_eq!(value.as_bool().unwrap(), true);
+                assert!(value.as_bool().unwrap());
                 bool_found = true;
             }
         }
